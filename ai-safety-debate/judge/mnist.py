@@ -34,13 +34,9 @@ class MNISTJudge:
     def mask_batch(self, batch):
         to_shuffle = np.zeros(batch.shape[1] * batch.shape[2], dtype=np.float32)
         to_shuffle[: self.N_pixels] = 1
-
-        def mask_image(image):
-            mask = tf.random.shuffle(to_shuffle)
-            mask = tf.reshape(mask, image.shape)
-            return tf.stack([mask * image, mask], 2)
-
-        return tf.map_fn(mask_image, batch)
+        shuffled = [tf.random.shuffle(to_shuffle) for i in range(batch.shape[0])]
+        masks = tf.reshape(shuffled, batch.shape)
+        return tf.stack([masks * batch, masks], 3)
 
     def cnn_model_fn(self, features, labels, mode):
         """Model function for CNN."""
@@ -132,8 +128,10 @@ class MNISTJudge:
 
     def evaluate(self):
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={"x": self.eval_data}, y=self.eval_labels, num_epochs=1, shuffle=False
+            x={"x": self.eval_data}, y=self.eval_labels, num_epochs=None, shuffle=False
         )
 
-        eval_results = self.mnist_classifier.evaluate(input_fn=eval_input_fn)
+        eval_results = self.mnist_classifier.evaluate(
+            input_fn=eval_input_fn, steps=self.train_data.shape[0] // 128
+        )
         return eval_results

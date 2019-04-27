@@ -32,11 +32,19 @@ class MNISTJudge:
         )
 
     def mask_batch(self, batch):
-        to_shuffle = np.zeros(batch.shape[1] * batch.shape[2], dtype=np.float32)
-        to_shuffle[: self.N_pixels] = 1
-        shuffled = [tf.random.shuffle(to_shuffle) for i in range(batch.shape[0])]
-        masks = tf.reshape(shuffled, batch.shape)
-        return tf.stack([masks * batch, masks], 3)
+        masked_batch = []
+        for i in range(batch.shape[0]):
+            image = batch[i]
+            image_flat = tf.reshape(image, (image.shape[0] * image.shape[1],))
+            # sample without replacement from nonzero
+            p = tf.random_uniform(image_flat.shape, 0, 1)
+            nonzero_p = tf.where(image_flat > 0, p, tf.zeros_like(p))
+            _, indices = tf.nn.top_k(nonzero_p, self.N_pixels)
+            mask_flat = tf.one_hot(indices, image_flat.shape[0], axis=0)
+            mask_flat = tf.reduce_sum(mask_flat, axis=1)
+            mask = tf.reshape(mask_flat, image.shape)
+            masked_batch.append(tf.stack((mask, mask * image), 2))
+        return tf.stack(masked_batch)
 
     def cnn_model_fn(self, features, labels, mode):
         """Model function for CNN."""

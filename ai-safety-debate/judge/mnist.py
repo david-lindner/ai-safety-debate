@@ -119,5 +119,6 @@ class MNISTJudge(Judge):
 
     # overrides Judge
     def evaluate_debate(self, input, answers):
+        return 0 # FIXME: some tensorflow problem (maybe related to superclassing)
         input = np.reshape(input, (1, 28, 28, 2))
         return super().evaluate_debate(input, answers)

@@ -23,7 +23,7 @@ def run(N_pixels, img_id, lying_agent_label):
     N_pixels = 4
 
     judge = MNISTJudge(N_pixels=N_pixels)
-    # judge.train(100)  # TODO reactivate after debate judging is fixed
+    judge.train(10)
 
     img = judge.eval_data[img_id]
     img_flat = np.reshape(img, img.shape[0] * img.shape[1])

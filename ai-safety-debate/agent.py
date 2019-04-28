@@ -21,5 +21,5 @@ class Agent:
             state, action, agent_playing
         )
         if done:
-            winner = self.judge.evaluate_debate(next_state, debate.initial_statements)
-        return action
+            winner = debate.judge.evaluate_debate(next_state, debate.initial_statements)
+        return possible_actions[0]

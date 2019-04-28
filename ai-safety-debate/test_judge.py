@@ -10,4 +10,5 @@ if __name__ == "__main__":
     mask_flat = np.zeros_like(img_flat)
     mask_flat[idx] = 1
     judge.train(10)
-    judge.evaluate_debate(np.stack((mask_flat, img_flat * mask_flat)), [0, 2])
+    print(judge.evaluate_accuracy())
+    print(judge.evaluate_debate(np.stack((mask_flat, img_flat * mask_flat)), [0, 2]))

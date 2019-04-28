@@ -1,12 +1,13 @@
 # from __future__ import division
 
 from copy import deepcopy
+
 # from mcts import mcts
 from functools import reduce
 import operator
 
 
-class DebateState():
+class DebateState:
     def __init__(self):
         # TODO
         # self.data = ...
@@ -22,7 +23,7 @@ class DebateState():
         # TODO
         newState.currentPlayer = self.currentPlayer * -1
         return newState
-    
+
     def maximizerNode(self):
         # return +1 if the current player is a maximizer, -1 if they are a minimizer
         return self.currentPlayer
@@ -36,7 +37,8 @@ class DebateState():
         assert self.isTerminal()
         return 666
 
-class Action():
+
+class Action:
     # TODO this is the old implementation
     def __init__(self, player, x, y):
         self.player = player
@@ -50,7 +52,12 @@ class Action():
         return str(self)
 
     def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.x == other.x and self.y == other.y and self.player == other.player
+        return (
+            self.__class__ == other.__class__
+            and self.x == other.x
+            and self.y == other.y
+            and self.player == other.player
+        )
 
     def __hash__(self):
         return hash((self.x, self.y, self.player))

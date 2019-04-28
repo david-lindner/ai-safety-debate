@@ -40,7 +40,7 @@ class MNISTJudge:
         shape = tf.shape(image_batch)
         batch_flat = tf.reshape(image_batch, (shape[0], shape[1] * shape[2]))
         mask_flat = self.mask_batch(batch_flat)
-        return tf.reshape(mask_flat, (shape[0],shape[1],shape[2],2))
+        return tf.reshape(mask_flat, (shape[0], shape[1], shape[2], 2))
 
     def mask_batch(self, batch):
         """

@@ -1,10 +1,11 @@
 import tensorflow as tf
 import numpy as np
+from judge.judge import Judge 
+# judge.judge assumes that you're calling this from one folder up
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
-
-class MNISTJudge:
+class MNISTJudge(Judge):
     """
     Sparse MNIST classifier, based on
     https://www.tensorflow.org/tutorials/estimators/cnn#building_the_cnn_mnist_classifier
@@ -12,6 +13,7 @@ class MNISTJudge:
 
     def __init__(self, N_pixels):
         self.N_pixels = N_pixels
+        self.batch_size = 128
         # Load training and eval data
         (
             (train_data, train_labels),
@@ -25,7 +27,7 @@ class MNISTJudge:
         self.eval_labels = eval_labels.astype(np.int32)  # not required
 
         # Create the Estimator
-        self.mnist_classifier = tf.estimator.Estimator(
+        self.classifier = tf.estimator.Estimator(
             model_fn=self.cnn_model_fn
         )  # , model_dir="/tmp/mnist_convnet_model")
 
@@ -42,25 +44,11 @@ class MNISTJudge:
         mask_flat = self.mask_batch(batch_flat)
         return tf.reshape(mask_flat, (shape[0],shape[1],shape[2],2))
 
-    def mask_batch(self, batch):
-        """
-        Create mask for each image in a batch, that contains N_pixels nonzero pixels
-        of the image. Combine this with the image to create the input for the DNN.
-        """
-        shape = tf.shape(batch)
-        p = tf.random_uniform(shape, 0, 1)
-        nonzero_p = tf.where(batch > 0, p, tf.zeros_like(p))
-        _, indices = tf.nn.top_k(nonzero_p, self.N_pixels)
-        mask = tf.one_hot(indices, shape[1], axis=1)
-        mask = tf.reduce_sum(mask, axis=2)
-        return tf.stack((mask, mask * batch), 2)
-
     def cnn_model_fn(self, features, labels, mode):
         """Model function for CNN."""
         # Input Layer
-        # TODO: potentially find a better way to do this
-        if len(features["x"].shape) == 4:
-            input_layer = features["x"]
+        if "masked_x" in features:
+            input_layer = features["masked_x"]
         else:
             input_layer = self.mask_image_batch(features["x"])
 
@@ -129,40 +117,7 @@ class MNISTJudge:
             mode=mode, loss=loss, eval_metric_ops=eval_metric_ops
         )
 
-    def train(self, n_steps):
-        # Train the model
-        train_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={"x": self.train_data},
-            y=self.train_labels,
-            batch_size=128,
-            num_epochs=None,
-            shuffle=True,
-        )
-
-        # train one step and display the probabilties
-        self.mnist_classifier.train(
-            input_fn=train_input_fn, steps=1, hooks=[self.logging_hook]
-        )
-
-        self.mnist_classifier.train(input_fn=train_input_fn, steps=n_steps)
-
-    def evaluate_accuracy(self):
-        eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={"x": self.eval_data}, y=self.eval_labels, num_epochs=1, shuffle=False
-        )
-        eval_results = self.mnist_classifier.evaluate(input_fn=eval_input_fn)
-        return eval_results
-
+    # overrides Judge
     def evaluate_debate(self, input, answers):
-        assert len(answers) == 2
         input = np.reshape(input, (1, 28, 28, 2))
-        eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={"x": input}, shuffle=False
-        )
-        output = self.mnist_classifier.predict(eval_input_fn)
-        prediction = next(output)
-        probs = prediction["probabilities"]
-        if probs[answers[0]] > probs[answers[1]]:
-            return 0
-        else:
-            return 1
+        return super().evaluate_debate(input, answers)

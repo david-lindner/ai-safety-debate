@@ -1,5 +1,4 @@
-from judge/mnist import MNISTjudge
-
+import numpy as np
 
 class DebateState():
     def __init__(self, sample, initial_statements, judge, moves_left=6, starting_player=1):

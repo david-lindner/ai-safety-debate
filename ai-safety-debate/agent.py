@@ -17,16 +17,11 @@ class Agent:
         Returns next move the agent wants to make
         """
         # TODO mcts magic here
-        state = debate.state
-        action = self.mcts.search(initialState=state)
-        return action
+        # state = debate.state
+        # action = self.mcts.search(initialState=state)
+        # return action
 
-        agent_playing = debate.agent_playing
-        possible_actions = debate.getPossibleActions(state)
-        action = 0
-        next_state, agent_playing, done = debate.get_next_state(
-            state, action, agent_playing
-        )
-        if done:
-            winner = debate.judge.evaluate_debate(next_state, debate.initial_statements)
-        return possible_actions[0]
+        possible_actions = debate.get_possible_actions(debate.state)
+        action = possible_actions[0]
+        print("action", action)
+        return action

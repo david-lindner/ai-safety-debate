@@ -1,4 +1,5 @@
 import numpy as np
+from visualization import plot_image_mask
 
 
 class Debate:
@@ -23,12 +24,13 @@ class Debate:
             self.state, self.agent_playing, self.done = self.get_next_state(
                 self.state, action, self.agent_playing
             )
+            plot_image_mask(self.state, 28)
         winner = self.judge.evaluate_debate(self.state, self.initial_statements)
         return winner
 
     def get_possible_actions(self, state):
         # not selected and nonzero feature
-        return np.where((state[0] == 0) & (state[1] != 0))
+        return np.where((state[0] == 0) & (state[1] != 0))[0]
 
     def get_next_state(self, state, action, agent_playing):
         state = np.copy(state)

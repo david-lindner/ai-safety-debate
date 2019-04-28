@@ -1,12 +1,11 @@
-from copy import deepcopy
 from judge/mnist import MNISTjudge
 
 
 class DebateState():
-    def __init__(self, image, initial_statements, judge, moves_left=6, starting_player=1):
+    def __init__(self, sample, initial_statements, judge, moves_left=6, starting_player=1):
         # debate has to tell the state how many moves can we make
-        self.image = image
-        self.mask = np.zeros_like(image)
+        self.sample = sample
+        self.mask = np.zeros_like(sample)
         self.initial_statements = initial_statements
         self.judge = judge
         self.moves_left = moves_left
@@ -20,7 +19,8 @@ class DebateState():
         # TODO change deep copy to a reference
         # we don't wanna make a copy everytime we go to a new state !
         assert action in self.getPossibleActions()
-        newState = deepcopy(self)
+        newState = copy(self)
+        newState.mask = copy(self.mask)
         newState.mask[action] = 1
         newState.moves_left -= 1
         newState.currentPlayer = self.currentPlayer * -1

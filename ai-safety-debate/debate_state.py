@@ -1,25 +1,28 @@
-# from __future__ import division
-
 from copy import deepcopy
-# from mcts import mcts
-from functools import reduce
-import operator
+from judge/mnist import MNISTjudge
 
 
 class DebateState():
-    def __init__(self):
-        # TODO
-        # self.data = ...
-        self.currentPlayer = 1
+    def __init__(self, image, initial_statements, judge, moves_left=6, starting_player=1):
+        # debate has to tell the state how many moves can we make
+        self.image = image
+        self.mask = np.zeros_like(image)
+        self.initial_statements = initial_statements
+        self.judge = judge
+        self.moves_left = moves_left
+        self.currentPlayer = starting_player
 
     def getPossibleActions(self):
-        # TODO
-        possibleActions = []
-        return possibleActions
+        # not selected and nonzero feature
+        return np.where((self.mask == 0) & (self.image != 0))[0]
 
     def takeAction(self, action):
+        # TODO change deep copy to a reference
+        # we don't wanna make a copy everytime we go to a new state !
+        assert action in self.getPossibleActions()
         newState = deepcopy(self)
-        # TODO
+        newState.mask[action] = 1
+        newState.moves_left -= 1
         newState.currentPlayer = self.currentPlayer * -1
         return newState
     
@@ -28,29 +31,14 @@ class DebateState():
         return self.currentPlayer
 
     def isTerminal(self):
-        # TODO
-        return False
+        assert self.moves_left >= 0
+        return self.moves_left == 0
 
     def getReward(self):
-        # TODO plug in the judge here
         assert self.isTerminal()
-        return 666
+        # judge returns 0 when the first player wins, 1 when second player wins
+        judge_outcome = judge.evaluateDebate( np.stack(self.mask, self.image) )
+        # MCTS needs to get a high reward when first player wins and low number when second wins
+        return judge_outcome * (-1)
+        # return 666
 
-class Action():
-    # TODO this is the old implementation
-    def __init__(self, player, x, y):
-        self.player = player
-        self.x = x
-        self.y = y
-
-    def __str__(self):
-        return str((self.x, self.y))
-
-    def __repr__(self):
-        return str(self)
-
-    def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.x == other.x and self.y == other.y and self.player == other.player
-
-    def __hash__(self):
-        return hash((self.x, self.y, self.player))

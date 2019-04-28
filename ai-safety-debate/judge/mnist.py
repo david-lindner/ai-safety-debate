@@ -43,15 +43,15 @@ class MNISTJudge:
         """
         masked_batch = []
         shape = tf.shape(batch)
-        flat_shape = (shape[0],shape[1]*shape[2])
-        batch_flat = tf.reshape(batch,flat_shape)
+        flat_shape = (shape[0], shape[1] * shape[2])
+        batch_flat = tf.reshape(batch, flat_shape)
         p = tf.random_uniform(flat_shape, 0, 1)
         nonzero_p = tf.where(batch_flat > 0, p, tf.zeros_like(p))
         _, indices = tf.nn.top_k(nonzero_p, self.N_pixels)
         mask_flat = tf.one_hot(indices, shape[0], axis=1)
         mask_flat = tf.reduce_sum(mask_flat, axis=2)
         mask = tf.reshape(mask_flat, shape)
-        out = tf.stack((mask, mask*batch),2)
+        out = tf.stack((mask, mask * batch), 2)
         tf.print(tf.shape(out))
         return out
 
@@ -153,7 +153,6 @@ class MNISTJudge:
         return eval_results
 
     def evaluate_debate(self, input, answers):
-        return np.random.choice([0, 1])
         ## TODO
         input = np.reshape(input, (1, 28, 28, 2))
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(

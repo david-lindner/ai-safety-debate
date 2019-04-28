@@ -8,7 +8,7 @@ if __name__ == "__main__":
     N_pixels = 4
 
     judge = MNISTJudge(N_pixels=N_pixels)
-    judge.train(100)
+    # judge.train(100)  # TODO reactivate after debate judging is fixed
 
     img = judge.eval_data[0]
     img_flat = np.reshape(img, img.shape[0] * img.shape[1])

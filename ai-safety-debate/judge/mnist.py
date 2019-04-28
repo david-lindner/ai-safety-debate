@@ -153,8 +153,9 @@ class MNISTJudge:
         return eval_results
 
     def evaluate_debate(self, input, answers):
+        return np.random.choice([0, 1])
         ## TODO
-        input = np.reshape(input, (1, input.shape[0], input.shape[1], input.shape[2]))
+        input = np.reshape(input, (1, 28, 28, 2))
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": input}, shuffle=False
         )

@@ -7,7 +7,7 @@ class Debate:
         self.agents = agents
         self.judge = judge
         self.N_moves = N_moves
-        self.state = np.stack(np.zeros_like(sample), sample)
+        self.state = np.stack((np.zeros_like(sample), sample))
         self.agent_playing = 0
         self.initial_statements = [agent.get_initial_statement() for agent in agents]
         self.done = False
@@ -20,7 +20,7 @@ class Debate:
     def play(self):
         while not self.done:
             action = self.agents[self.agent_playing].select_move(self)
-            self.state, self.agent_playing, done = self.get_next_state(
+            self.state, self.agent_playing, self.done = self.get_next_state(
                 self.state, action, self.agent_playing
             )
         winner = self.judge.evaluate_debate(self.state, self.initial_statements)

@@ -1,6 +1,7 @@
 from mcts import mcts
 from debate_state import DebateState
 
+
 class Agent:
     def __init__(self, precommit_label=None, agentStrength=1000):
         self.precommit_label = precommit_label

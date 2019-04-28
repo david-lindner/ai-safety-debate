@@ -1,8 +1,8 @@
 import tensorflow as tf
 import numpy as np
 
-class Judge:
 
+class Judge:
     def mask_batch(self, batch):
         """
         Create mask for each image in a batch, that contains N_pixels nonzero pixels
@@ -35,10 +35,7 @@ class Judge:
 
     def evaluate_accuracy(self):
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={"x": self.eval_data}, 
-            y=self.eval_labels, 
-            num_epochs=1, 
-            shuffle=False
+            x={"x": self.eval_data}, y=self.eval_labels, num_epochs=1, shuffle=False
         )
         eval_results = self.classifier.evaluate(input_fn=eval_input_fn)
         return eval_results
@@ -46,7 +43,7 @@ class Judge:
     def evaluate_debate(self, input, answers):
         assert len(answers) == 2
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={"masked_x":input}, shuffle=False
+            x={"masked_x": input}, shuffle=False
         )
         output = self.classifier.predict(eval_input_fn)
         prediction = next(output)

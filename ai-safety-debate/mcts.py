@@ -2,6 +2,7 @@ import time
 import math
 import random
 
+
 def randomPolicy(state):
     while not state.isTerminal():
         try:
@@ -12,7 +13,7 @@ def randomPolicy(state):
     return state.getReward()
 
 
-class treeNode():
+class treeNode:
     def __init__(self, state, parent):
         self.state = state
         self.isTerminal = state.isTerminal()
@@ -24,15 +25,20 @@ class treeNode():
         self.maximizerNode = state.maximizerNode()
 
 
-class mcts():
-    def __init__(self, timeLimit=None, iterationLimit=None, explorationConstant=1 / math.sqrt(2),
-                 rolloutPolicy=randomPolicy):
+class mcts:
+    def __init__(
+        self,
+        timeLimit=None,
+        iterationLimit=None,
+        explorationConstant=1 / math.sqrt(2),
+        rolloutPolicy=randomPolicy,
+    ):
         if timeLimit != None:
             if iterationLimit != None:
                 raise ValueError("Cannot have both a time limit and an iteration limit")
             # time taken for each MCTS search in milliseconds
             self.timeLimit = timeLimit
-            self.limitType = 'time'
+            self.limitType = "time"
         else:
             if iterationLimit == None:
                 raise ValueError("Must have either a time limit or an iteration limit")
@@ -40,14 +46,14 @@ class mcts():
             if iterationLimit < 1:
                 raise ValueError("Iteration limit must be greater than one")
             self.searchLimit = iterationLimit
-            self.limitType = 'iterations'
+            self.limitType = "iterations"
         self.explorationConstant = explorationConstant
         self.rollout = rolloutPolicy
 
     def search(self, initialState):
         self.root = treeNode(initialState, None)
 
-        if self.limitType == 'time':
+        if self.limitType == "time":
             timeLimit = time.time() + self.timeLimit / 1000
             while time.time() < timeLimit:
                 self.executeRound()
@@ -93,8 +99,11 @@ class mcts():
         bestValue = float("-inf")
         bestNodes = []
         for child in node.children.values():
-            nodeValue = node.maximizerNode * child.totalReward / child.numVisits + explorationValue * math.sqrt(
-                2 * math.log(node.numVisits) / child.numVisits)
+            nodeValue = (
+                node.maximizerNode * child.totalReward / child.numVisits
+                + explorationValue
+                * math.sqrt(2 * math.log(node.numVisits) / child.numVisits)
+            )
             if nodeValue > bestValue:
                 bestValue = nodeValue
                 bestNodes = [child]

@@ -1,8 +1,9 @@
 import tensorflow as tf
 import numpy as np
-from .judge import Judge 
+from .judge import Judge
 
 tf.logging.set_verbosity(tf.logging.INFO)
+
 
 class MNISTJudge(Judge):
     """
@@ -41,7 +42,7 @@ class MNISTJudge(Judge):
         shape = tf.shape(image_batch)
         batch_flat = tf.reshape(image_batch, (shape[0], shape[1] * shape[2]))
         mask_flat = self.mask_batch(batch_flat)
-        return tf.reshape(mask_flat, (shape[0],shape[1],shape[2],2))
+        return tf.reshape(mask_flat, (shape[0], shape[1], shape[2], 2))
 
     def cnn_model_fn(self, features, labels, mode):
         """Model function for CNN."""
@@ -118,5 +119,6 @@ class MNISTJudge(Judge):
 
     # overrides Judge
     def evaluate_debate(self, input, answers):
+        return 0 # FIXME: some tensorflow problem (maybe related to superclassing)
         input = np.reshape(input, (1, 28, 28, 2))
         return super().evaluate_debate(input, answers)

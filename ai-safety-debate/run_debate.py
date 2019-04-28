@@ -7,14 +7,16 @@ from judge import MNISTJudge
 from debate import Debate
 from agent import Agent
 
-ex = Experiment('mnist_debate')
-ex.observers.append(FileStorageObserver.create('experiments'))
+ex = Experiment("mnist_debate")
+ex.observers.append(FileStorageObserver.create("experiments"))
+
 
 @ex.config
 def cfg():
     N_pixels = 4
     img_id = 0
     lying_agent_label = 2
+
 
 @ex.automain
 def run(N_pixels, img_id, lying_agent_label):

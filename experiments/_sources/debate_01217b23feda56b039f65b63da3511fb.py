@@ -24,7 +24,7 @@ class Debate:
             self.state, self.agent_playing, self.done = self.get_next_state(
                 self.state, action, self.agent_playing
             )
-            #plot_image_mask(self.state, 28)
+            # plot_image_mask(self.state, 28)
         winner = self.judge.evaluate_debate(self.state, self.initial_statements)
         return winner
 

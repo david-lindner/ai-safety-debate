@@ -1,9 +1,11 @@
 import tensorflow as tf
 import numpy as np
-from judge.judge import Judge 
+from judge.judge import Judge
+
 # judge.judge assumes that you're calling this from one folder up
 
 tf.logging.set_verbosity(tf.logging.INFO)
+
 
 class MNISTJudge(Judge):
     """

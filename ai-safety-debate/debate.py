@@ -11,18 +11,14 @@ class Debate:
         self.sample = sample
         self.initial_statements = [agent.get_initial_statement() for agent in agents]
         # TODO
-        self.currentState = DebateState(sample,
-                                        self.initial_statements,
-                                        self.judge,
-                                        self.N_moves,
-                                        0)
+        self.currentState = DebateState(
+            sample, self.initial_statements, self.judge, self.N_moves, 0
+        )
 
     def resetToStartPosition(self):
-         self.currentState = DebateState(sample,
-                                        self.initial_statements,
-                                        self.judge,
-                                        self.N_moves,
-                                        0)
+        self.currentState = DebateState(
+            sample, self.initial_statements, self.judge, self.N_moves, 0
+        )
 
     def play(self):
         while not self.currentState.isTerminal():

@@ -1,8 +1,9 @@
 import tensorflow as tf
 import numpy as np
-from .judge import Judge 
+from .judge import Judge
 
 tf.logging.set_verbosity(tf.logging.INFO)
+
 
 class MNISTJudge(Judge):
     """

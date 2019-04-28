@@ -28,5 +28,6 @@ class Debate:
         while not self.currentState.isTerminal():
             action = self.agents[self.currentState.currentPlayer].select_move(self)
             self.currentState = self.currentState.takeAction(action)
-        winner = self.judge.evaluate_debate(self.currentState, self.initial_statements)
+        winner = self.judge.evaluate_debate( np.stack([self.currentState.mask, self.sample]),
+                                             self.initial_statements)
         return winner

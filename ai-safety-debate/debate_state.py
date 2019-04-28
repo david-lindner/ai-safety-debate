@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 class DebateState():
     def __init__(self, sample, initial_statements, judge, moves_left=6, starting_player=0):
@@ -37,7 +38,8 @@ class DebateState():
     def getReward(self):
         assert self.isTerminal()
         # judge returns 0 when the first player wins, 1 when second player wins
-        judge_outcome = judge.evaluateDebate( np.stack(self.mask, self.sample) )
+        judge_outcome = self.judge.evaluate_debate( np.stack([self.mask, self.sample]),
+                                                    self.initial_statements)
         # MCTS needs to get a high reward when first player wins and low number when second wins
         # the following line returns 0 when pl.1 wins and -1 when pl.2 wins. This is intentional.
         return judge_outcome * (-1)

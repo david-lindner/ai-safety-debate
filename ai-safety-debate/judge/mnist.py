@@ -148,12 +148,9 @@ class MNISTJudge:
 
     def evaluate_accuracy(self):
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={"x": self.eval_data}, y=self.eval_labels, num_epochs=None, shuffle=False
+            x={"x": self.eval_data}, y=self.eval_labels, num_epochs=1, shuffle=False
         )
-
-        eval_results = self.mnist_classifier.evaluate(
-            input_fn=eval_input_fn, steps=self.train_data.shape[0] // 128
-        )
+        eval_results = self.mnist_classifier.evaluate(input_fn=eval_input_fn)
         return eval_results
 
     def evaluate_debate(self, input, answers):

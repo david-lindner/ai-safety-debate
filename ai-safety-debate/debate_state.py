@@ -1,8 +1,11 @@
 import numpy as np
 import copy
 
-class DebateState():
-    def __init__(self, sample, initial_statements, judge, moves_left=6, starting_player=1):
+
+class DebateState:
+    def __init__(
+        self, sample, initial_statements, judge, moves_left=6, starting_player=1
+    ):
         # debate has to tell the state how many moves can we make
         self.sample = sample
         self.mask = np.zeros_like(sample)
@@ -35,8 +38,9 @@ class DebateState():
     def getReward(self):
         assert self.isTerminal()
         # judge returns 0 when the first player wins, 1 when second player wins
-        judge_outcome = judge.evaluateDebate( np.stack(self.mask, self.sample) )
+        judge_outcome = self.judge.evaluateDebate(
+            np.stack(self.mask, self.sample), self.initial_statements
+        )
         # MCTS needs to get a high reward when first player wins and low number when second wins
         return judge_outcome * (-1)
         # return 666
-

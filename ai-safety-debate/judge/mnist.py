@@ -41,24 +41,28 @@ class MNISTJudge:
         Create mask for each image in a batch, that contains N_pixels nonzero pixels
         of the image. Combine this with the image to create the input for the DNN.
         """
-        masked_batch = []
         shape = tf.shape(batch)
         flat_shape = (shape[0], shape[1] * shape[2])
         batch_flat = tf.reshape(batch, flat_shape)
         p = tf.random_uniform(flat_shape, 0, 1)
         nonzero_p = tf.where(batch_flat > 0, p, tf.zeros_like(p))
         _, indices = tf.nn.top_k(nonzero_p, self.N_pixels)
-        mask_flat = tf.one_hot(indices, shape[0], axis=1)
+        mask_flat = tf.one_hot(indices, flat_shape[1], axis=1)
         mask_flat = tf.reduce_sum(mask_flat, axis=2)
         mask = tf.reshape(mask_flat, shape)
-        out = tf.stack((mask, mask * batch), 2)
+        out = tf.stack((mask, mask * batch), 3)
         tf.print(tf.shape(out))
+        print(out.shape)
         return out
 
     def cnn_model_fn(self, features, labels, mode):
         """Model function for CNN."""
         # Input Layer
-        input_layer = self.mask_batch(features["x"])
+        # TODO: potentially find a better way to do this
+        if len(features["x"].shape) == 4:
+            input_layer = features["x"]
+        else:
+            input_layer = self.mask_batch(features["x"])
 
         # Convolutional Layer #1
         conv1 = tf.layers.conv2d(
@@ -159,7 +163,5 @@ class MNISTJudge:
             x={"x": input}, shuffle=False
         )
         output = self.mnist_classifier.predict(eval_input_fn)
-        import pdb
-
-        pdb.set_trace()
+        print([i for i in output])
         return output

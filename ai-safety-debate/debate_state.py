@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 class DebateState():
     def __init__(self, sample, initial_statements, judge, moves_left=6, starting_player=1):
@@ -12,11 +13,9 @@ class DebateState():
 
     def getPossibleActions(self):
         # not selected and nonzero feature
-        return np.where((self.mask == 0) & (self.image != 0))[0]
+        return np.where((self.mask == 0) & (self.sample != 0))[0]
 
     def takeAction(self, action):
-        # TODO change deep copy to a reference
-        # we don't wanna make a copy everytime we go to a new state !
         assert action in self.getPossibleActions()
         newState = copy(self)
         newState.mask = copy(self.mask)
@@ -36,7 +35,7 @@ class DebateState():
     def getReward(self):
         assert self.isTerminal()
         # judge returns 0 when the first player wins, 1 when second player wins
-        judge_outcome = judge.evaluateDebate( np.stack(self.mask, self.image) )
+        judge_outcome = judge.evaluateDebate( np.stack(self.mask, self.sample) )
         # MCTS needs to get a high reward when first player wins and low number when second wins
         return judge_outcome * (-1)
         # return 666

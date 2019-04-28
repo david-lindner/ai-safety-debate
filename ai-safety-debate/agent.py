@@ -1,4 +1,5 @@
 from mcts import mcts
+from debate_state import DebateState
 
 
 class Agent:
@@ -16,12 +17,7 @@ class Agent:
         """
         Returns next move the agent wants to make
         """
-        # TODO mcts magic here
-        # state = debate.state
-        # action = self.mcts.search(initialState=state)
-        # return action
-
-        possible_actions = debate.get_possible_actions(debate.state)
-        action = possible_actions[0]
-        print("action", action)
+        currentState = debate.currentState
+        assert not currentState.isTerminal()
+        action = self.mcts.search(initialState=currentState)
         return action

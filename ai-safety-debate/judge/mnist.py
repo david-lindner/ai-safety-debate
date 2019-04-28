@@ -154,11 +154,15 @@ class MNISTJudge:
         return eval_results
 
     def evaluate_debate(self, input, answers):
-        ## TODO
+        assert len(answers) == 2
         input = np.reshape(input, (1, 28, 28, 2))
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": input}, shuffle=False
         )
         output = self.mnist_classifier.predict(eval_input_fn)
-        print([i for i in output])
-        return output
+        prediction = next(output)
+        probs = prediction["probabilities"]
+        if probs[answers[0]] > probs[answers[1]]:
+            return 0
+        else:
+            return 1

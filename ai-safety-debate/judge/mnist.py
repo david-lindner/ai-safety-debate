@@ -36,29 +36,33 @@ class MNISTJudge:
             tensors=tensors_to_log, every_n_iter=50
         )
 
+    def mask_image_batch(self, image_batch):
+        shape = tf.shape(image_batch)
+        batch_flat = tf.reshape(image_batch, (shape[0], shape[1] * shape[2]))
+        mask_flat = self.mask_batch(batch_flat)
+        return tf.reshape(mask_flat, (shape[0],shape[1],shape[2],2))
+
     def mask_batch(self, batch):
         """
         Create mask for each image in a batch, that contains N_pixels nonzero pixels
         of the image. Combine this with the image to create the input for the DNN.
         """
-        masked_batch = []
         shape = tf.shape(batch)
-        flat_shape = (shape[0],shape[1]*shape[2])
-        batch_flat = tf.reshape(batch,flat_shape)
-        p = tf.random_uniform(flat_shape, 0, 1)
-        nonzero_p = tf.where(batch_flat > 0, p, tf.zeros_like(p))
+        p = tf.random_uniform(shape, 0, 1)
+        nonzero_p = tf.where(batch > 0, p, tf.zeros_like(p))
         _, indices = tf.nn.top_k(nonzero_p, self.N_pixels)
-        mask_flat = tf.one_hot(indices, shape[0], axis=1)
-        mask_flat = tf.reduce_sum(mask_flat, axis=2)
-        mask = tf.reshape(mask_flat, shape)
-        out = tf.stack((mask, mask*batch),2)
-        tf.print(tf.shape(out))
-        return out
+        mask = tf.one_hot(indices, shape[1], axis=1)
+        mask = tf.reduce_sum(mask, axis=2)
+        return tf.stack((mask, mask * batch), 2)
 
     def cnn_model_fn(self, features, labels, mode):
         """Model function for CNN."""
         # Input Layer
-        input_layer = self.mask_batch(features["x"])
+        # TODO: potentially find a better way to do this
+        if len(features["x"].shape) == 4:
+            input_layer = features["x"]
+        else:
+            input_layer = self.mask_image_batch(features["x"])
 
         # Convolutional Layer #1
         conv1 = tf.layers.conv2d(
@@ -144,23 +148,21 @@ class MNISTJudge:
 
     def evaluate_accuracy(self):
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={"x": self.eval_data}, y=self.eval_labels, num_epochs=None, shuffle=False
+            x={"x": self.eval_data}, y=self.eval_labels, num_epochs=1, shuffle=False
         )
-
-        eval_results = self.mnist_classifier.evaluate(
-            input_fn=eval_input_fn, steps=self.train_data.shape[0] // 128
-        )
+        eval_results = self.mnist_classifier.evaluate(input_fn=eval_input_fn)
         return eval_results
 
     def evaluate_debate(self, input, answers):
-        return np.random.choice([0, 1])
-        ## TODO
+        assert len(answers) == 2
         input = np.reshape(input, (1, 28, 28, 2))
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": input}, shuffle=False
         )
         output = self.mnist_classifier.predict(eval_input_fn)
-        import pdb
-
-        pdb.set_trace()
-        return output
+        prediction = next(output)
+        probs = prediction["probabilities"]
+        if probs[answers[0]] > probs[answers[1]]:
+            return 0
+        else:
+            return 1

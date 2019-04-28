@@ -5,6 +5,11 @@ tf.logging.set_verbosity(tf.logging.INFO)
 
 
 class MNISTJudge:
+    """
+    Sparse MNIST classifier, based on
+    https://www.tensorflow.org/tutorials/estimators/cnn#building_the_cnn_mnist_classifier
+    """
+
     def __init__(self, N_pixels):
         self.N_pixels = N_pixels
         # Load training and eval data
@@ -32,6 +37,10 @@ class MNISTJudge:
         )
 
     def mask_batch(self, batch):
+        """
+        Create mask for each image in a batch, that contains N_pixels nonzero pixels
+        of the image. Combine this with the image to create the input for the DNN.
+        """
         masked_batch = []
         for i in range(batch.shape[0]):
             image = batch[i]
@@ -83,7 +92,6 @@ class MNISTJudge:
 
         # Logits Layer
         logits = tf.layers.dense(inputs=dropout, units=10)
-        print(logits.shape)
 
         predictions = {
             # Generate predictions (for PREDICT and EVAL mode)
@@ -134,7 +142,7 @@ class MNISTJudge:
 
         self.mnist_classifier.train(input_fn=train_input_fn, steps=n_steps)
 
-    def evaluate(self):
+    def evaluate_accuracy(self):
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": self.eval_data}, y=self.eval_labels, num_epochs=None, shuffle=False
         )
@@ -143,3 +151,15 @@ class MNISTJudge:
             input_fn=eval_input_fn, steps=self.train_data.shape[0] // 128
         )
         return eval_results
+
+    def evaluate_debate(self, input, answers):
+        ## TODO
+        input = np.reshape(input, (1, input.shape[0], input.shape[1], input.shape[2]))
+        eval_input_fn = tf.estimator.inputs.numpy_input_fn(
+            x={"x": input}, shuffle=False
+        )
+        output = self.mnist_classifier.predict(eval_input_fn)
+        import pdb
+
+        pdb.set_trace()
+        return output

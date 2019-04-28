@@ -36,24 +36,24 @@ class MNISTJudge:
             tensors=tensors_to_log, every_n_iter=50
         )
 
+    def mask_image_batch(self, image_batch):
+        shape = tf.shape(image_batch)
+        batch_flat = tf.reshape(image_batch, (shape[0], shape[1] * shape[2]))
+        mask_flat = self.mask_batch(batch_flat)
+        return tf.reshape(mask_flat, (shape[0],shape[1],shape[2],2))
+
     def mask_batch(self, batch):
         """
         Create mask for each image in a batch, that contains N_pixels nonzero pixels
         of the image. Combine this with the image to create the input for the DNN.
         """
         shape = tf.shape(batch)
-        flat_shape = (shape[0], shape[1] * shape[2])
-        batch_flat = tf.reshape(batch, flat_shape)
-        p = tf.random_uniform(flat_shape, 0, 1)
-        nonzero_p = tf.where(batch_flat > 0, p, tf.zeros_like(p))
+        p = tf.random_uniform(shape, 0, 1)
+        nonzero_p = tf.where(batch > 0, p, tf.zeros_like(p))
         _, indices = tf.nn.top_k(nonzero_p, self.N_pixels)
-        mask_flat = tf.one_hot(indices, flat_shape[1], axis=1)
-        mask_flat = tf.reduce_sum(mask_flat, axis=2)
-        mask = tf.reshape(mask_flat, shape)
-        out = tf.stack((mask, mask * batch), 3)
-        tf.print(tf.shape(out))
-        print(out.shape)
-        return out
+        mask = tf.one_hot(indices, shape[1], axis=1)
+        mask = tf.reduce_sum(mask, axis=2)
+        return tf.stack((mask, mask * batch), 2)
 
     def cnn_model_fn(self, features, labels, mode):
         """Model function for CNN."""
@@ -62,7 +62,7 @@ class MNISTJudge:
         if len(features["x"].shape) == 4:
             input_layer = features["x"]
         else:
-            input_layer = self.mask_batch(features["x"])
+            input_layer = self.mask_image_batch(features["x"])
 
         # Convolutional Layer #1
         conv1 = tf.layers.conv2d(

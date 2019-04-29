@@ -8,7 +8,7 @@ class DebateState:
     ):
         # debate has to tell the state how many moves can we make
         self.sample = sample
-        self.mask = np.zeros_like(sample)
+        self.mask = np.stack((np.zeros_like(sample), np.zeros_like(sample)))
         self.initial_statements = initial_statements
         self.judge = judge
         self.moves_left = moves_left
@@ -16,13 +16,13 @@ class DebateState:
 
     def getPossibleActions(self):
         # not selected and nonzero feature
-        return np.where((self.mask == 0) & (self.sample != 0))[0]
+        return np.where((self.mask.sum(axis=0) == 0) & (self.sample != 0))[0]
 
     def takeAction(self, action):
         assert action in self.getPossibleActions()
         newState = copy.copy(self)
-        newState.mask = copy.copy(self.mask)
-        newState.mask[action] = 1
+        newState.mask = np.copy(self.mask)
+        newState.mask[newState.currentPlayer, action] = 1
         newState.moves_left -= 1
         newState.currentPlayer = (self.currentPlayer + 1) % 2
         return newState
@@ -41,7 +41,9 @@ class DebateState:
     def getReward(self):
         assert self.isTerminal()
         # judge returns 0 when the first player wins, 1 when second player wins
-        judge_outcome = self.judge.evaluate_debate(np.stack((self.mask, self.sample)), self.initial_statements)
+        judge_outcome = self.judge.evaluate_debate(
+            np.stack((self.mask.sum(axis=0), self.sample)), self.initial_statements
+        )
         # MCTS needs to get a high reward when first player wins and low number when second wins
         # the following line returns 0 when pl.1 wins and -1 when pl.2 wins. This is intentional.
         return judge_outcome * (-1)

@@ -2,7 +2,7 @@ import numpy as np
 from judge import MNISTJudge
 
 if __name__ == "__main__":
-    judge = MNISTJudge(N_pixels=4)
+    judge = MNISTJudge(4)
     img = judge.eval_data[0]
     img_flat = np.reshape(img, img.shape[0] * img.shape[1])
     nonzero = np.where(img_flat > 0)[0]

@@ -1,5 +1,5 @@
 import tensorflow as tf
-
+import numpy as np
 
 class Judge:
     def __init__(self, N_to_mask, restore_model_from, save_model_as):
@@ -29,7 +29,7 @@ class Judge:
             tf.estimator.export.build_raw_serving_input_receiver_fn(
                 {"masked_x":tf.placeholder(
                     'float32', 
-                    shape=[None]+self.shape[:1])}
+                    shape=[None]+self.shape[1:])}
             )
         )
 

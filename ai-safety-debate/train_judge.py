@@ -12,7 +12,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.dataset == "mnist":
-        judge = MNISTJudge(N_pixels=args.N_features, save_model_as=args.path)
+        judge = MNISTJudge(N_to_mask=args.N_features, save_model_as=args.path)
     else:
         raise Exception("Unknown dataset " + args.dataset)
 

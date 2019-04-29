@@ -26,7 +26,7 @@ class Debate:
             action = self.agents[self.currentState.currentPlayer].select_move(self)
             self.currentState = self.currentState.takeAction(action)
             # David: put plotting in here for debugging, want to remove this eventually
-            plot_image_mask(self.currentState, 28)  # 28 is the MNIST image size
+            plot_image_mask(self.currentState)  # 28 is the MNIST image size
         winner = self.judge.evaluate_debate( np.stack([self.currentState.mask.sum(axis=0), self.sample]),
                                              self.initial_statements)
         return winner

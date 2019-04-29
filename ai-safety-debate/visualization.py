@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_image_mask(state, img_size, filename=None):
+def plot_image_mask(state, filename=None):
     """
     Visualizes a debate state, in case the sample is an image.
 
@@ -10,6 +10,9 @@ def plot_image_mask(state, img_size, filename=None):
     img_size: width / height or the (square) image
     """
     plt.clf()
+    img_size = np.sqrt(state.mask[0].size)
+    assert(img_size % 1 == 0)
+    img_size = int(img_size)
     image = np.reshape(state.sample, (img_size, img_size))
     mask_1 = np.reshape(state.mask[0], (img_size, img_size))
     mask_2 = np.reshape(state.mask[1], (img_size, img_size))

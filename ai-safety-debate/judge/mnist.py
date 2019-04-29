@@ -14,6 +14,8 @@ class MNISTJudge(Judge):
     def __init__(self, N_pixels):
         self.N_pixels = N_pixels
         self.batch_size = 128
+        self.shape = [None,28,28,2]
+
         # Load training and eval data
         (
             (train_data, train_labels),
@@ -27,7 +29,7 @@ class MNISTJudge(Judge):
         self.eval_labels = eval_labels.astype(np.int32)  # not required
 
         # Create the Estimator
-        self.classifier = tf.estimator.Estimator(
+        self.estimator = tf.estimator.Estimator(
             model_fn=self.cnn_model_fn
         )  # , model_dir="/tmp/mnist_convnet_model")
 
@@ -119,6 +121,5 @@ class MNISTJudge(Judge):
 
     # overrides Judge
     def evaluate_debate(self, input, answers):
-        return 0 # FIXME: some tensorflow problem (maybe related to superclassing)
         input = np.reshape(input, (1, 28, 28, 2))
         return super().evaluate_debate(input, answers)

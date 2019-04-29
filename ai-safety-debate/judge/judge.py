@@ -26,28 +26,27 @@ class Judge:
             shuffle=True,
         )
 
-        # train one step and display the probabilties
-        self.classifier.train(
-            input_fn=train_input_fn, steps=1, hooks=[self.logging_hook]
-        )
+        self.estimator.train(input_fn=train_input_fn, steps=n_steps)
 
-        self.classifier.train(input_fn=train_input_fn, steps=n_steps)
+        self.predictor = tf.contrib.predictor.from_estimator(
+            self.estimator,
+            tf.estimator.export.build_raw_serving_input_receiver_fn(
+                {"masked_x":tf.placeholder('float32', shape=self.shape)}
+            )
+        )
 
     def evaluate_accuracy(self):
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": self.eval_data}, y=self.eval_labels, num_epochs=1, shuffle=False
         )
-        eval_results = self.classifier.evaluate(input_fn=eval_input_fn)
+        eval_results = self.estimator.evaluate(input_fn=eval_input_fn)
         return eval_results
 
     def evaluate_debate(self, input, answers):
         assert len(answers) == 2
-        eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={"masked_x": input}, shuffle=False
-        )
-        output = self.classifier.predict(eval_input_fn)
-        prediction = next(output)
-        probs = prediction["probabilities"]
+        output = self.predictor({"masked_x":input})
+        prediction = output
+        probs = prediction["probabilities"][0]
         if probs[answers[0]] > probs[answers[1]]:
             return 0
         else:

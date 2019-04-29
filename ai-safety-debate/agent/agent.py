@@ -1,5 +1,4 @@
-from mcts import mcts
-from debate_state import DebateState
+from .mcts import mcts
 
 
 class Agent:

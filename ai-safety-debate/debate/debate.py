@@ -1,6 +1,6 @@
 import numpy as np
-from debate_state import DebateState
-from visualization import plot_image_mask
+from .debate_state import DebateState
+from util.visualization import plot_image_mask
 
 
 class Debate:

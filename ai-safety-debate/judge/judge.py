@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
+
 class Judge:
     def mask_batch(self, batch):
         """
@@ -30,8 +31,8 @@ class Judge:
         self.predictor = tf.contrib.predictor.from_estimator(
             self.estimator,
             tf.estimator.export.build_raw_serving_input_receiver_fn(
-                {"masked_x":tf.placeholder('float32', shape=self.shape)}
-            )
+                {"masked_x": tf.placeholder("float32", shape=self.shape)}
+            ),
         )
 
     def evaluate_accuracy(self):
@@ -43,7 +44,7 @@ class Judge:
 
     def evaluate_debate(self, input, answers):
         assert len(answers) == 2
-        prediction = self.predictor({"masked_x":input})
+        prediction = self.predictor({"masked_x": input})
         probs = prediction["probabilities"][0]
         if probs[answers[0]] > probs[answers[1]]:
             return 0

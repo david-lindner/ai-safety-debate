@@ -4,6 +4,7 @@ from .judge import Judge
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
+
 class MNISTJudge(Judge):
     """
     Sparse MNIST classifier, based on
@@ -13,7 +14,7 @@ class MNISTJudge(Judge):
     def __init__(self, N_pixels):
         self.N_pixels = N_pixels
         self.batch_size = 128
-        self.shape = [None,28,28,2]
+        self.shape = [None, 28, 28, 2]
 
         # Load training and eval data
         (

@@ -10,7 +10,7 @@ class MNISTJudge(Judge):
     https://www.tensorflow.org/tutorials/estimators/cnn#building_the_cnn_mnist_classifier
     """
 
-    def __init__(self, N_pixels):
+    def __init__(self, N_pixels, restore_model_from = None, save_model_as = None):
         self.N_pixels = N_pixels
         self.batch_size = 128
         self.shape = [None,28,28,2]
@@ -29,8 +29,10 @@ class MNISTJudge(Judge):
 
         # Create the Estimator
         self.estimator = tf.estimator.Estimator(
-            model_fn=self.cnn_model_fn
-        )  # , model_dir="/tmp/mnist_convnet_model")
+            model_fn = self.cnn_model_fn,
+            model_dir = save_model_as,
+            warm_start_from = restore_model_from
+        )
 
         # Set up logging for predictions
         tensors_to_log = {"probabilities": "softmax_tensor"}

@@ -1,7 +1,6 @@
 import tensorflow as tf
 import numpy as np
 
-
 class Judge:
     def mask_batch(self, batch):
         """
@@ -44,8 +43,7 @@ class Judge:
 
     def evaluate_debate(self, input, answers):
         assert len(answers) == 2
-        output = self.predictor({"masked_x":input})
-        prediction = output
+        prediction = self.predictor({"masked_x":input})
         probs = prediction["probabilities"][0]
         if probs[answers[0]] > probs[answers[1]]:
             return 0

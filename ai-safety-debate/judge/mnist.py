@@ -4,7 +4,6 @@ from .judge import Judge
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
-
 class MNISTJudge(Judge):
     """
     Sparse MNIST classifier, based on

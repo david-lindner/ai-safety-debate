@@ -16,14 +16,17 @@ def cfg():
     N_pixels = 4
     img_id = 0
     lying_agent_label = 2
+    judge_path = None
 
 
 @ex.automain
-def run(N_pixels, img_id, lying_agent_label):
+def run(N_pixels, img_id, lying_agent_label, judge_path):
     N_pixels = 4
 
-    judge = MNISTJudge(N_pixels=N_pixels)
-    judge.train(10)
+    if not judge_path:
+        raise Exception("No judge given. Use train_judge.py first.")
+
+    judge = MNISTJudge(N_pixels=N_pixels, restore_model_from=judge_path)
 
     img = judge.eval_data[img_id]
     img_flat = np.reshape(img, img.shape[0] * img.shape[1])

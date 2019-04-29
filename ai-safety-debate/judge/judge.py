@@ -1,5 +1,5 @@
 import tensorflow as tf
-import numpy as np
+
 
 class Judge:
     def __init__(self, N_to_mask, restore_model_from, save_model_as):
@@ -76,7 +76,7 @@ class Judge:
     def evaluate_debate(self, input, answers):
         assert len(answers) == 2
         input = np.reshape(input, self.shape) # needed for images
-        prediction = self.predictor({"masked_x":input})
+        prediction = self.predictor({"masked_x": input})
         probs = prediction["probabilities"][0]
         if probs[answers[0]] > probs[answers[1]]:
             return 0

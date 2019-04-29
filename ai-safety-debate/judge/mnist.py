@@ -12,7 +12,6 @@ class MNISTJudge(Judge):
     """
 
     def __init__(self, N_pixels, restore_model_from = None, save_model_as = None):
-        self.N_pixels = N_pixels
         self.batch_size = 128
         self.shape = [None, 28, 28, 2]
 
@@ -28,19 +27,7 @@ class MNISTJudge(Judge):
         self.eval_data = eval_data / np.float32(255)
         self.eval_labels = eval_labels.astype(np.int32)  # not required
 
-        # Create the Estimator
-        self.estimator = tf.estimator.Estimator(
-            model_fn = self.cnn_model_fn,
-            model_dir = save_model_as,
-            warm_start_from = restore_model_from
-        )
-
-        # Set up logging for predictions
-        tensors_to_log = {"probabilities": "softmax_tensor"}
-
-        self.logging_hook = tf.train.LoggingTensorHook(
-            tensors=tensors_to_log, every_n_iter=50
-        )
+        super().__init__(N_pixels, restore_model_from, save_model_as)
 
     def mask_image_batch(self, image_batch):
         shape = tf.shape(image_batch)
@@ -48,7 +35,7 @@ class MNISTJudge(Judge):
         mask_flat = self.mask_batch(batch_flat)
         return tf.reshape(mask_flat, (shape[0], shape[1], shape[2], 2))
 
-    def cnn_model_fn(self, features, labels, mode):
+    def model_fn(self, features, labels, mode):
         """Model function for CNN."""
         # Input Layer
         if "masked_x" in features:

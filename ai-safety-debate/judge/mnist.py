@@ -10,9 +10,11 @@ class MNISTJudge(Judge):
     https://www.tensorflow.org/tutorials/estimators/cnn#building_the_cnn_mnist_classifier
     """
 
-    def __init__(self, N_pixels, restore_model_from = None, save_model_as = None):
+    def __init__(self, N_to_mask, restore_model_from = None, save_model_as = None):
         self.batch_size = 128
-        self.shape = [None,28,28,2]
+        
+        self.shape = [1,28,28,2] # shape for prediction
+        # One 28*28 image at a time, paired with a mask
 
         # Load training and eval data
         (
@@ -26,13 +28,7 @@ class MNISTJudge(Judge):
         self.eval_data = eval_data / np.float32(255)
         self.eval_labels = eval_labels.astype(np.int32)  # not required
 
-        super().__init__(N_pixels, restore_model_from, save_model_as)
-
-    def mask_image_batch(self, image_batch):
-        shape = tf.shape(image_batch)
-        batch_flat = tf.reshape(image_batch, (shape[0], shape[1] * shape[2]))
-        mask_flat = self.mask_batch(batch_flat)
-        return tf.reshape(mask_flat, (shape[0], shape[1], shape[2], 2))
+        super().__init__(N_to_mask, restore_model_from, save_model_as)
 
     def model_fn(self, features, labels, mode):
         """Model function for CNN."""
@@ -106,8 +102,3 @@ class MNISTJudge(Judge):
         return tf.estimator.EstimatorSpec(
             mode=mode, loss=loss, eval_metric_ops=eval_metric_ops
         )
-
-    # overrides Judge
-    def evaluate_debate(self, input, answers):
-        input = np.reshape(input, (1, 28, 28, 2))
-        return super().evaluate_debate(input, answers)

@@ -27,9 +27,17 @@ class Judge:
         self.predictor = tf.contrib.predictor.from_estimator(
             self.estimator,
             tf.estimator.export.build_raw_serving_input_receiver_fn(
-                {"masked_x":tf.placeholder('float32', shape=self.shape)}
+                {"masked_x":tf.placeholder(
+                    'float32', 
+                    shape=[None]+self.shape[:1])}
             )
         )
+
+    def mask_image_batch(self, image_batch):
+        shape = tf.shape(image_batch)
+        batch_flat = tf.reshape(image_batch, (shape[0], shape[1] * shape[2]))
+        mask_flat = self.mask_batch(batch_flat)
+        return tf.reshape(mask_flat, (shape[0], shape[1], shape[2], 2))
 
     def mask_batch(self, batch):
         """
@@ -67,6 +75,7 @@ class Judge:
 
     def evaluate_debate(self, input, answers):
         assert len(answers) == 2
+        input = np.reshape(input, self.shape) # needed for images
         prediction = self.predictor({"masked_x":input})
         probs = prediction["probabilities"][0]
         if probs[answers[0]] > probs[answers[1]]:

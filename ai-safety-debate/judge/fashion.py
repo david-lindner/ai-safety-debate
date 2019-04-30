@@ -2,9 +2,9 @@ import tensorflow as tf
 import numpy as np
 from .judge import Judge
 
-class MNISTJudge(Judge):
+class FashionJudge(Judge):
     """
-    Sparse MNIST classifier, based on
+    Sparse FashionMnist classifier, based on
     https://www.tensorflow.org/tutorials/estimators/cnn#building_the_cnn_mnist_classifier
     """
 
@@ -18,7 +18,7 @@ class MNISTJudge(Judge):
         (
             (train_data, train_labels),
             (eval_data, eval_labels),
-        ) = tf.keras.datasets.mnist.load_data()
+        ) = tf.keras.datasets.fashion_mnist.load_data()
 
         self.train_data = train_data / np.float32(255)
         self.train_labels = train_labels.astype(np.int32)  # not required

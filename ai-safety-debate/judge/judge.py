@@ -1,6 +1,8 @@
 import tensorflow as tf
 import numpy as np
 
+tf.logging.set_verbosity(tf.logging.INFO)
+
 class Judge:
     def __init__(self, N_to_mask, restore_model_from, save_model_as):
         self.N_to_mask = N_to_mask

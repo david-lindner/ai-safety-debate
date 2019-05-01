@@ -9,7 +9,7 @@ class MNISTJudge(Judge):
     https://www.tensorflow.org/tutorials/estimators/cnn#building_the_cnn_mnist_classifier
     """
 
-    def __init__(self, N_to_mask, restore_model_from=None, save_model_as=None):
+    def __init__(self, N_to_mask, model_dir=None):
         self.batch_size = 128
 
         self.shape = [1, 28, 28, 2]  # shape for prediction
@@ -27,16 +27,9 @@ class MNISTJudge(Judge):
         self.eval_data = eval_data / np.float32(255)
         self.eval_labels = eval_labels.astype(np.int32)  # not required
 
-        super().__init__(N_to_mask, restore_model_from, save_model_as)
+        super().__init__(N_to_mask, model_dir)
 
     def model_fn(self, features, labels, mode):
-        """Model function for CNN."""
-        print("-----------------------")
-        print("Mode:", mode)
-        print("tf.estimator.ModeKeys.TRAIN", tf.estimator.ModeKeys.TRAIN)
-        print("tf.estimator.ModeKeys.PREDICT", tf.estimator.ModeKeys.PREDICT)
-        print("-----------------------")
-
         # Input Layer
         if "masked_x" in features:
             input_layer = features["masked_x"]

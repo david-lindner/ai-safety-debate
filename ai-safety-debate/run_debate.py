@@ -31,9 +31,9 @@ def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts):
         raise Exception("Either judge_path or dataset needs to be specified")
 
     if dataset == "mnist":
-        judge = MNISTJudge(N_to_mask=N_to_mask, restore_model_from=path)
+        judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=path)
     elif dataset == "fashion":
-        judge = FashionJudge(N_to_mask=N_to_mask, restore_model_from=path)
+        judge = FashionJudge(N_to_mask=N_to_mask, model_dir=path)
     else:
         raise Exception("Unknown dataset in " + "dataset.txt: " + dataset)
 

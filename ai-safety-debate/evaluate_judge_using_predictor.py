@@ -1,3 +1,5 @@
+### small script used for debugging
+
 from judge import MNISTJudge, FashionJudge
 
 if __name__ == "__main__":
@@ -13,10 +15,11 @@ if __name__ == "__main__":
         raise Exception("Either judge_path or dataset needs to be specified")
 
     if dataset == "mnist":
-        judge = MNISTJudge(N_to_mask=N_to_mask, restore_model_from=path)
+        judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=path)
     elif dataset == "fashion":
-        judge = FashionJudge(N_to_mask=N_to_mask, restore_model_from=path)
+        judge = FashionJudge(N_to_mask=N_to_mask, model_dir=path)
     else:
         raise Exception("Unknown dataset in " + "dataset.txt: " + dataset)
 
-    print("accuracy", judge.evaluate_accuracy_using_predictor())
+    print("accuracy estimator", judge.evaluate_accuracy())
+    print("accuracy predictor", judge.evaluate_accuracy_using_predictor())

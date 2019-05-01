@@ -7,10 +7,12 @@ class Judge:
     def __init__(self, N_to_mask, restore_model_from, save_model_as):
         self.N_to_mask = N_to_mask
 
+        config = tf.estimator.RunConfig(keep_checkpoint_max=1)
         # Create the Estimator
         self.estimator = tf.estimator.Estimator(
             model_fn = self.model_fn,
             model_dir = save_model_as,
+            config = config,
             warm_start_from = restore_model_from
         )
 

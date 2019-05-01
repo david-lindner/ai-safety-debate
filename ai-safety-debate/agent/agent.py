@@ -7,7 +7,7 @@ class Agent:
         self.mcts = mcts(iterationLimit=agentStrength)
 
     def get_initial_statement(self):
-        if self.precommit_label:
+        if self.precommit_label is not None:
             return self.precommit_label
         else:
             raise NotImplementedError()

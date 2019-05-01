@@ -3,15 +3,16 @@ import numpy as np
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
+
 class Judge:
     def __init__(self, N_to_mask, restore_model_from, save_model_as):
         self.N_to_mask = N_to_mask
 
         # Create the Estimator
         self.estimator = tf.estimator.Estimator(
-            model_fn = self.model_fn,
-            model_dir = save_model_as,
-            warm_start_from = restore_model_from
+            model_fn=self.model_fn,
+            model_dir=save_model_as,
+            warm_start_from=restore_model_from,
         )
 
         # Subclasses need to implement a model_fn with a "softmax_tensor"
@@ -29,10 +30,8 @@ class Judge:
         self.predictor = tf.contrib.predictor.from_estimator(
             self.estimator,
             tf.estimator.export.build_raw_serving_input_receiver_fn(
-                {"masked_x":tf.placeholder(
-                    'float32', 
-                    shape=[None]+self.shape[1:])}
-            )
+                {"masked_x": tf.placeholder("float32", shape=[None] + self.shape[1:])}
+            ),
         )
 
     def mask_image_batch(self, image_batch):
@@ -77,9 +76,10 @@ class Judge:
 
     def evaluate_debate(self, input, answers):
         assert len(answers) == 2
-        input = np.reshape(input, self.shape) # needed for images
+        input = np.reshape(input, self.shape)  # needed for images
         prediction = self.predictor({"masked_x": input})
         probs = prediction["probabilities"][0]
+        print("probs", probs)
         if probs[answers[0]] > probs[answers[1]]:
             return 0
         else:

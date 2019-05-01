@@ -2,16 +2,17 @@ import tensorflow as tf
 import numpy as np
 from .judge import Judge
 
+
 class MNISTJudge(Judge):
     """
     Sparse MNIST classifier, based on
     https://www.tensorflow.org/tutorials/estimators/cnn#building_the_cnn_mnist_classifier
     """
 
-    def __init__(self, N_to_mask, restore_model_from = None, save_model_as = None):
+    def __init__(self, N_to_mask, restore_model_from=None, save_model_as=None):
         self.batch_size = 128
-        
-        self.shape = [1, 28, 28, 2] # shape for prediction
+
+        self.shape = [1, 28, 28, 2]  # shape for prediction
         # One 28*28 image at a time, paired with a mask
 
         # Load training and eval data
@@ -30,6 +31,12 @@ class MNISTJudge(Judge):
 
     def model_fn(self, features, labels, mode):
         """Model function for CNN."""
+        print("-----------------------")
+        print("Mode:", mode)
+        print("tf.estimator.ModeKeys.TRAIN", tf.estimator.ModeKeys.TRAIN)
+        print("tf.estimator.ModeKeys.PREDICT", tf.estimator.ModeKeys.PREDICT)
+        print("-----------------------")
+
         # Input Layer
         if "masked_x" in features:
             input_layer = features["masked_x"]
@@ -69,12 +76,13 @@ class MNISTJudge(Judge):
         # Logits Layer
         logits = tf.layers.dense(inputs=dropout, units=10)
 
+        softmax_tensor = tf.nn.softmax(logits, name="softmax_tensor")
         predictions = {
             # Generate predictions (for PREDICT and EVAL mode)
             "classes": tf.argmax(input=logits, axis=1),
             # Add `softmax_tensor` to the graph. It is used for PREDICT and by the
             # `logging_hook`.
-            "probabilities": tf.nn.softmax(logits, name="softmax_tensor"),
+            "probabilities": softmax_tensor,
         }
 
         if mode == tf.estimator.ModeKeys.PREDICT:

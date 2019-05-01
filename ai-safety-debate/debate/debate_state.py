@@ -40,8 +40,9 @@ class DebateState:
 
     def getReward(self):
         assert self.isTerminal()
+        mask = self.mask.sum(axis=0)
         winning_player = self.judge.evaluate_debate(
-            np.stack((self.mask.sum(axis=0), self.sample)), self.initial_statements
+            np.stack((mask, self.sample * mask), axis=1), self.initial_statements
         )
         if winning_player == 0:
             return 0

@@ -30,9 +30,9 @@ def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts):
     else:
         raise Exception("Either judge_path or dataset needs to be specified")
 
-    if dataset == 'mnist':
+    if dataset == "mnist":
         judge = MNISTJudge(N_to_mask=N_to_mask, restore_model_from=path)
-    elif dataset == 'fashion':
+    elif dataset == "fashion":
         judge = FashionJudge(N_to_mask=N_to_mask, restore_model_from=path)
     else:
         raise Exception("Unknown dataset in " + "dataset.txt: " + dataset)
@@ -46,5 +46,6 @@ def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts):
     agent2 = Agent(precommit_label=label, agentStrength=rollouts)
 
     debate = Debate((agent1, agent2), judge, N_to_mask, sample)
+
     winner = debate.play()
     print("Winner", winner)

@@ -65,11 +65,11 @@ class mcts:
         return self.getAction(self.root, bestChild)
 
     def executeRound(self):
-        node = self.selectNode(self.root)
+        node = self.select(self.root)
         reward = self.rollout(node.state)
         self.backpropogate(node, reward)
 
-    def selectNode(self, node):
+    def select(self, node):
         while not node.isTerminal:
             if node.isFullyExpanded:
                 node = self.getBestChild(node, self.explorationConstant)

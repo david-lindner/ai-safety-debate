@@ -27,7 +27,7 @@ class Debate:
             # David: put plotting in here for debugging, want to remove this eventually
             # plot_image_mask(self.currentState)
         winner = self.judge.evaluate_debate(
-            np.stack([self.currentState.mask.sum(axis=0), self.sample]),
+            np.stack([self.currentState.mask.sum(axis=0), self.sample], axis=1),
             self.initial_statements,
         )
         return winner

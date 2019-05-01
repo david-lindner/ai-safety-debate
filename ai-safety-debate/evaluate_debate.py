@@ -52,7 +52,7 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
         if paper_eval:
             for lying_agent_label in range(10):
                 if lying_agent_label == label:
-            		continue
+                    continue
                 winner = 1
                 liar_wins = 0
                 for game in range(3):

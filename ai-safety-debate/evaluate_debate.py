@@ -17,7 +17,7 @@ def cfg():
     N_to_mask = 4
     judge_path = './mnist2000judge'
     dataset = 'mnist'
-    nmbr_samples = 10
+    nmbr_samples = 20
     paper_eval = True
     rollouts = 10000
 
@@ -45,12 +45,14 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
 
     for sample_id in range(nmbr_samples):
 
-        sample = judge.eval_data[sample_id].flatten()
+        sample = judge.eval_data[sample_id+100].flatten()
 
-        label = judge.eval_labels[sample_id]
+        label = judge.eval_labels[sample_id+100]
 
         if paper_eval:
             for lying_agent_label in range(10):
+            	if lying_agent_label == label:
+            		continue
                 winner = 1
                 liar_wins = 0
                 for game in range(3):

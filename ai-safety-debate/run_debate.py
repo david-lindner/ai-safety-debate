@@ -27,7 +27,7 @@ def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset):
     elif dataset:
         path = "saved_models/" + dataset + str(N_to_mask)
     else:
-        raise Exception("Either judge_path or dataset needs to be specified")
+        raise Exception("dataset must be specified")
 
     if dataset == 'mnist':
         judge = MNISTJudge(N_to_mask=N_to_mask, restore_model_from=path)

@@ -15,13 +15,15 @@ ex.observers.append(FileStorageObserver.create("experiments"))
 @ex.config
 def cfg():
     N_to_mask = 4
-    judge_path = './mnist_judge'
+    judge_path = './mnist2000judge'
     dataset = 'mnist'
-    dataset_size = 10
+    nmbr_samples = 10
+    paper_eval = True
+    rollouts = 10000
 
 
 @ex.automain
-def run(N_to_mask, judge_path, dataset, dataset_size):
+def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
     if judge_path:
         path = judge_path
     elif dataset:
@@ -36,33 +38,52 @@ def run(N_to_mask, judge_path, dataset, dataset_size):
     else:
         raise Exception("Unknown dataset in " + "dataset.txt: " + dataset)
 
-    if not dataset_size:
-        dataset_size = len(judge.eval_data)
+    if not nmbr_samples:
+        nmbr_samples = len(judge.eval_data)
 
-    lying_agent_wins = 0
     truth_agent_wins = 0
 
-    for sample_id in range(dataset_size):
+    for sample_id in range(nmbr_samples):
 
         sample = judge.eval_data[sample_id].flatten()
 
         label = judge.eval_labels[sample_id]
-        lying_agent_label = randint(0, 9)
-        while (label == lying_agent_label):
-        	lying_agent_label = randint(0, 9)
 
-        agent1 = Agent(precommit_label=lying_agent_label)
-        agent2 = Agent(precommit_label=label)
+        if paper_eval:
+            for lying_agent_label in range(10):
+                winner = 1
+                liar_wins = 0
+                for game in range(3):
+                    agent1 = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
+                    agent2 = Agent(precommit_label=label, agentStrength=rollouts)
 
-        debate = Debate((agent1, agent2), judge, N_to_mask, sample)
-        winner = debate.play()
+                    debate = Debate((agent1, agent2), judge, N_to_mask, sample)
+                    this_game_winner = debate.play()
+                    if this_game_winner == 0:
+                    	liar_wins = liar_wins + 1
+                    if liar_wins == 2 or (liar_wins == 0 and game == 1):
+                    	break
+
+                if liar_wins >= 2:
+                	winner = 0
+                	break
+
+        else: # fast evaluation with random  lying label
+            lying_agent_label = randint(0, 9)
+            while (label == lying_agent_label):
+                lying_agent_label = randint(0, 9)
+
+            agent1 = Agent(precommit_label=lying_agent_label,  agentStrength=rollouts)
+            agent2 = Agent(precommit_label=label,  agentStrength=rollouts)
+
+            debate = Debate((agent1, agent2), judge, N_to_mask, sample)
+            winner = debate.play()
 
         if winner == 0:
-        	lying_agent_wins = lying_agent_wins + 1
         	print(":(")
         else:
         	truth_agent_wins = truth_agent_wins + 1
         	print(":)")
 
-    print("Truth wins", truth_agent_wins/dataset_size)
-    print("Truth wins", truth_agent_wins, "out of", dataset_size)
+    print("Truth wins", truth_agent_wins/nmbr_samples)
+    print("Truth wins", truth_agent_wins, "out of", nmbr_samples)

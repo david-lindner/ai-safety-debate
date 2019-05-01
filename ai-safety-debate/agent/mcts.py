@@ -30,7 +30,7 @@ class mcts:
         self,
         timeLimit=None,
         iterationLimit=None,
-        explorationConstant=1 / math.sqrt(2),
+        explorationConstant=1,  # 1 / math.sqrt(2),
         rolloutPolicy=randomPolicy,
     ):
         if timeLimit != None:

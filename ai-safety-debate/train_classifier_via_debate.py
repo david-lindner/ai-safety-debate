@@ -85,19 +85,19 @@ def run(
             batch_weights.append(weight)
 
             if (i + 1) % batch_size == 0 or i == N_train - 1:
-                print("i", i)
-                print("batch_weights", batch_weights)
+                print("i", i, flush=True)
+                print("batch_weights", batch_weights, flush=True)
                 debate_classifier.train(
                     np.array(batch_samples),
                     np.array(batch_labels),
                     np.array(batch_weights),
                 )
                 acc = debate_classifier.evaluate_accuracy(eval_data, eval_labels)
-                print("Updated model")
-                print("Evaluation accuracy", acc)
+                print("Updated model", flush=True)
+                print("Evaluation accuracy", acc, flush=True)
                 batch_samples = []
                 batch_labels = []
                 batch_weights = []
 
     acc = debate_classifier.evaluate_accuracy(eval_data, eval_labels)
-    print("Accuracy", acc)
+    print("Accuracy", acc, flush=True)

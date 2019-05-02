@@ -15,11 +15,12 @@ ex.observers.append(FileStorageObserver.create("experiments"))
 @ex.config
 def cfg():
     N_to_mask = 4
-    judge_path = "./mnist2000judge"
+    judge_path = None
+    # judge_path = "./mnist2000judge"
     dataset = "mnist"
     nmbr_samples = 10
     paper_eval = True
-    rollouts = 10000
+    rollouts = 100
 
 
 @ex.automain
@@ -64,8 +65,9 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
                     agent2 = Agent(precommit_label=label, agentStrength=rollouts)
 
                     debate = Debate((agent1, agent2), judge, N_to_mask, sample, debug=False)
-                    this_game_winner = debate.play()
-                    if this_game_winner == 0:
+                    # TODO this will do weird stuff if the utilities are non-binary. Works if they are either 1 or -1.
+                    this_game_utility = debate.play()
+                    if this_game_utility == 1:
                         liar_wins = liar_wins + 1
                     if liar_wins == 2 or (liar_wins == 0 and game == 1):
                         break
@@ -83,9 +85,9 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
             agent2 = Agent(precommit_label=label, agentStrength=rollouts)
 
             debate = Debate((agent1, agent2), judge, N_to_mask, sample)
-            winner = debate.play()
+            this_game_utility = debate.play()
 
-        if winner == 0:
+        if this_game_utility == 1:
             print(":(")
             print(
                 "Sample {}:  Truth wins {} out of {} ({}%)".format(

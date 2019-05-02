@@ -40,15 +40,20 @@ def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts):
     sample = judge.eval_data[sample_id].flatten()
 
     label = judge.eval_labels[sample_id]
-    assert label != lying_agent_label
+    if lying_agent_label==label:
+        lying_agent_label = (lying_agent_label + 1) % 10
 
     agent1 = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
     agent2 = Agent(precommit_label=label, agentStrength=rollouts)
 
-    debate = Debate((agent1, agent2), judge, N_to_mask, sample, debug=True)
+    debate = Debate((agent1, agent2), judge, N_to_mask, sample, debug=False)
 
-    winner = debate.play()
-    if winner==1:
-        print("Winner: the honest agent")
+    utility = debate.play()
+    if utility==1:
+        print("Winner: liar")
+    elif utility==0:
+        print("Draw")
+    elif utility==-1:
+        print("Winner: truth")
     else:
-        print("Winner: the liar")
+        print("Utility of the honest agent: ", utility*(-1)," (1=win, -1 = loss)")

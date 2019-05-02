@@ -70,12 +70,13 @@ class FashionJudge(Judge):
         # Logits Layer
         logits = tf.layers.dense(inputs=dropout, units=10)
 
+        softmax_tensor = tf.nn.softmax(logits, name="softmax_tensor")
         predictions = {
             # Generate predictions (for PREDICT and EVAL mode)
             "classes": tf.argmax(input=logits, axis=1),
             # Add `softmax_tensor` to the graph. It is used for PREDICT and by the
             # `logging_hook`.
-            "probabilities": tf.nn.softmax(logits, name="softmax_tensor"),
+            "probabilities": softmax_tensor,
         }
 
         if mode == tf.estimator.ModeKeys.PREDICT:

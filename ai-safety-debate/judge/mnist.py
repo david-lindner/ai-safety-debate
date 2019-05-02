@@ -30,6 +30,7 @@ class MNISTJudge(Judge):
         super().__init__(N_to_mask, model_dir)
 
     def model_fn(self, features, labels, mode):
+        """Model function for CNN."""
         # Input Layer
         if "masked_x" in features:
             input_layer = features["masked_x"]

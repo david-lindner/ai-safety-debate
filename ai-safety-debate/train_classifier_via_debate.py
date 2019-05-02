@@ -65,19 +65,24 @@ def run(
             agent2 = DebateAgent(precommit_label=label2, agentStrength=rollouts)
             debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
             winner = debate.play()
-            weight = 1 if winner == 0 else -1
+            winner = 0 if label == judge.train_labels[i] else 1
+            weight = 1 if winner == 0 else 0  # -1
+            print("weight", weight)
             batch_samples.append(sample)
             batch_labels.append(label)
             batch_weights.append(weight)
 
             if (i + 1) % batch_size == 0 or i == N_train - 1:
+                import pdb
+
+                pdb.set_trace()
                 debate_classifier.train(
                     np.array(batch_samples),
                     np.array(batch_labels),
                     np.array(batch_weights),
                 )
-                print("Updated model")
                 acc = debate_classifier.evaluate_accuracy(eval_data, eval_labels)
+                print("Updated model")
                 print("Evaluation accuracy", acc)
 
     acc = debate_classifier.evaluate_accuracy(eval_data, eval_labels)

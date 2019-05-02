@@ -20,11 +20,11 @@ def cfg():
     dataset = "mnist"
     nmbr_samples = 10
     rollouts = 100
-    paper_eval = True
+    paper_eval = False
     index_of_truth_agent = 0
 
 @ex.automain
-def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, index_of_truth_agent):
+def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, index_of_truth_agent=0):
     # parse parameters
     if judge_path:
         path = judge_path
@@ -82,7 +82,7 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, inde
             lying_agent_label = randint(0, 9)
             while label == lying_agent_label:
                 lying_agent_label = randint(0, 9)
-            # lying_agent_label = None
+            lying_agent_label = None
 
             agent_lie = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
             agent_truth = Agent(precommit_label=label, agentStrength=rollouts)

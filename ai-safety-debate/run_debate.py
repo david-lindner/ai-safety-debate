@@ -23,7 +23,7 @@ def cfg():
 
 
 @ex.automain
-def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts, index_of_truth_agent):
+def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts, index_of_truth_agent=0):
     if judge_path:
         path = judge_path
     elif dataset:
@@ -60,4 +60,4 @@ def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts, 
     elif utility==-1:
         print("Winner: truth")
     else:
-        print("Utility of the honest agent: ", utility*(-1)," (1=win, -1 = loss)")if truth_agent == winner:
+        print("Utility of the honest agent: ", utility*(-1)," (1=win, -1 = loss)")

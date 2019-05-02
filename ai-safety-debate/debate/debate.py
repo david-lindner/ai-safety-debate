@@ -2,6 +2,7 @@ import numpy as np
 from .debate_state import DebateState
 try:
     from util.visualization import plot_image_mask
+    visualization = True
 except ModuleNotFoundError:
     visualization = False
 

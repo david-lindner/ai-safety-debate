@@ -50,7 +50,6 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
         sample = judge.eval_data[sample_id].flatten()
 
         # label = judge.eval_labels[sample_id]
-        label = None
 
         if paper_eval:
             for lying_agent_label in range(10):
@@ -78,10 +77,10 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
                     break
 
         else:  # fast evaluation with random  lying label
-            # lying_agent_label = randint(0, 9)
-            # while label == lying_agent_label:
-            #     lying_agent_label = randint(0, 9)
-            lying_agent_label = None
+            lying_agent_label = randint(0, 9)
+            while label == lying_agent_label:
+                lying_agent_label = randint(0, 9)
+            # lying_agent_label = None
 
             agent1 = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
             agent2 = Agent(precommit_label=label, agentStrength=rollouts)

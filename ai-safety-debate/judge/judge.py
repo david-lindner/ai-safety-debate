@@ -8,9 +8,12 @@ class Judge:
     def __init__(self, N_to_mask, model_dir):
         self.N_to_mask = N_to_mask
 
+        config = tf.estimator.RunConfig(keep_checkpoint_max=1)
         # Create the Estimator
         self.estimator = tf.estimator.Estimator(
-            model_fn=self.model_fn, model_dir=model_dir
+            model_fn=self.model_fn, 
+            model_dir=model_dir,
+            config = config
         )
 
         # Subclasses need to implement a model_fn with a "softmax_tensor"

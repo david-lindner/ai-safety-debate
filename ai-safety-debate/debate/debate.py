@@ -1,7 +1,9 @@
 import numpy as np
 from .debate_state import DebateState
-from util.visualization import plot_image_mask
-
+try:
+    from util.visualization import plot_image_mask
+except ModuleNotFoundError:
+    visualization = False
 
 class Debate:
     def __init__(self, agents, judge, N_moves, sample):
@@ -25,7 +27,8 @@ class Debate:
             action = self.agents[self.currentState.currentPlayer].select_move(self)
             self.currentState = self.currentState.takeAction(action)
             # David: put plotting in here for debugging, want to remove this eventually
-            # plot_image_mask(self.currentState)
+            # if visualization:
+            #     plot_image_mask(self.currentState)
         winner = self.judge.evaluate_debate(
             np.stack([self.currentState.mask.sum(axis=0), self.sample], axis=1),
             self.initial_statements,

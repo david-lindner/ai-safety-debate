@@ -14,15 +14,16 @@ ex.observers.append(FileStorageObserver.create("experiments"))
 @ex.config
 def cfg():
     N_to_mask = 4
-    sample_id = 0
-    lying_agent_label = 2
+    sample_id = 10
+    lying_agent_label = 4
     judge_path = None
-    dataset = None
+    dataset = "mnist"
     rollouts = 1000
+    truth_agent = 0
 
 
 @ex.automain
-def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts):
+def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts, truth_agent):
     if judge_path:
         path = judge_path
     elif dataset:
@@ -42,10 +43,16 @@ def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts):
     label = judge.eval_labels[sample_id]
     assert label != lying_agent_label
 
-    agent1 = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
-    agent2 = Agent(precommit_label=label, agentStrength=rollouts)
+    agent_lie = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
+    agent_truth = Agent(precommit_label=label, agentStrength=rollouts)
 
-    debate = Debate((agent1, agent2), judge, N_to_mask, sample)
+    if truth_agent == 0:
+        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample)
+    else:
+        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample)
 
     winner = debate.play()
-    print("Winner", winner)
+    if truth_agent == winner:
+        print(":) Truth wins")
+    else:
+        print(":( Truth loses")

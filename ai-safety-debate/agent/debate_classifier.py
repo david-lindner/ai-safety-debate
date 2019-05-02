@@ -27,6 +27,13 @@ class DebateClassifier:
         eval_results = self.estimator.evaluate(input_fn=eval_input_fn)
         return eval_results
 
+    def predict(self, sample):
+        eval_input_fn = tf.estimator.inputs.numpy_input_fn(
+            x={"x": sample}, y=None, num_epochs=1, shuffle=False
+        )
+        eval_results = self.estimator.predict(input_fn=eval_input_fn)
+        return eval_results
+
     def model_fn(self, features, labels, mode):
         # Input Layer
         input_layer = tf.reshape(features["x"], [-1] + self.sample_shape + [1])

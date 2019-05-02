@@ -90,7 +90,6 @@ class DebateClassifier:
             loss = tf.losses.sparse_softmax_cross_entropy(
                 labels=labels, logits=logits, weights=loss_weights
             )
-            self.summary.scalar(loss)
         else:
             loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
 

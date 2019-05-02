@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-tf.logging.set_verbosity(tf.logging.INFO)
+tf.logging.set_verbosity(tf.logging.WARN)
 
 
 class Judge:

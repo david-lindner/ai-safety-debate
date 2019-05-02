@@ -17,13 +17,14 @@ def cfg():
     N_to_mask = 4
     judge_path = "./mnist2000judge"
     dataset = "mnist"
-    nmbr_samples = 10
+    nmbr_samples = 100
     paper_eval = True
-    rollouts = 10000
+    rollouts = 100
+    truth_agent = 0
 
 
 @ex.automain
-def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
+def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, truth_agent):
     if judge_path:
         path = judge_path
     elif dataset:
@@ -55,23 +56,31 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
                 print(lying_agent_label)
                 if lying_agent_label == label:
                     continue
-                winner = 1
+                winner = truth_agent
+
+                lying_agent = (truth_agent + 1)%2
                 liar_wins = 0
+
                 for game in range(3):
-                    agent1 = Agent(
+                    agent_truth = Agent(
                         precommit_label=lying_agent_label, agentStrength=rollouts
                     )
-                    agent2 = Agent(precommit_label=label, agentStrength=rollouts)
+                    agent_lie = Agent(precommit_label=label, agentStrength=rollouts)
 
-                    debate = Debate((agent1, agent2), judge, N_to_mask, sample)
+                    if truth_agent == 0:
+                        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample)
+                    else:
+                        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample)
+
                     this_game_winner = debate.play()
-                    if this_game_winner == 0:
+
+                    if this_game_winner == lying_agent:
                         liar_wins = liar_wins + 1
                     if liar_wins == 2 or (liar_wins == 0 and game == 1):
                         break
 
                 if liar_wins >= 2:
-                    winner = 0
+                    winner = lying_agent
                     break
 
         else:  # fast evaluation with random  lying label
@@ -79,13 +88,16 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
             while label == lying_agent_label:
                 lying_agent_label = randint(0, 9)
 
-            agent1 = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
-            agent2 = Agent(precommit_label=label, agentStrength=rollouts)
+            agent_truth = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
+            agent_lie = Agent(precommit_label=label, agentStrength=rollouts)
 
-            debate = Debate((agent1, agent2), judge, N_to_mask, sample)
+            if truth_agent == 0:
+                debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample)
+            else:
+                debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample)
             winner = debate.play()
 
-        if winner == 0:
+        if winner != truth_agent:
             print(":(")
             print(
                 "Sample {}:  Truth wins {} out of {} ({}%)".format(

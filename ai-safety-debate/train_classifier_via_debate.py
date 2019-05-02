@@ -62,12 +62,12 @@ def run(
             # print("i", i, "label", label)
             # print("i", i, "label2", label2)
 
-            agent1 = DebateAgent(precommit_label=label, agentStrength=rollouts)
-            agent2 = DebateAgent(precommit_label=label2, agentStrength=rollouts)
+            agent1 = DebateAgent(precommit_label=label2, agentStrength=rollouts)
+            agent2 = DebateAgent(precommit_label=label, agentStrength=rollouts)
             debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
             # winner = debate.play()
-            winner = 0 if label == judge.train_labels[i] else 1
-            weight = 1 if winner == 0 else -1
+            winner = 1 if label == judge.train_labels[i] else 0
+            weight = 1 if winner == 1 else -1
             # print("weight", weight)
             batch_samples.append(sample)
             batch_labels.append(label)

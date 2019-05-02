@@ -66,16 +66,13 @@ def run(
             debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
             winner = debate.play()
             winner = 0 if label == judge.train_labels[i] else 1
-            weight = 1 if winner == 0 else 0  # -1
+            weight = 1 if winner == 0 else 0
             print("weight", weight)
             batch_samples.append(sample)
             batch_labels.append(label)
             batch_weights.append(weight)
 
             if (i + 1) % batch_size == 0 or i == N_train - 1:
-                import pdb
-
-                pdb.set_trace()
                 debate_classifier.train(
                     np.array(batch_samples),
                     np.array(batch_labels),

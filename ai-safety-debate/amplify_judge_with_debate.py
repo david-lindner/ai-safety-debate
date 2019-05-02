@@ -24,7 +24,9 @@ def cfg():
 
 
 @ex.automain
-def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, truth_agent):
+def run(
+    N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, truth_agent
+):
     if judge_path:
         path = judge_path
     elif dataset:
@@ -58,19 +60,25 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, trut
                     continue
                 winner = truth_agent
 
-                lying_agent = (truth_agent + 1)%2
+                lying_agent = (truth_agent + 1) % 2
                 liar_wins = 0
 
                 for game in range(3):
-                    agent_truth = Agent(
+                    agent_truth = DebateAgent(
                         precommit_label=lying_agent_label, agentStrength=rollouts
                     )
-                    agent_lie = Agent(precommit_label=label, agentStrength=rollouts)
+                    agent_lie = DebateAgent(
+                        precommit_label=label, agentStrength=rollouts
+                    )
 
                     if truth_agent == 0:
-                        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample)
+                        debate = Debate(
+                            (agent_truth, agent_lie), judge, N_to_mask, sample
+                        )
                     else:
-                        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample)
+                        debate = Debate(
+                            (agent_lie, agent_truth), judge, N_to_mask, sample
+                        )
 
                     this_game_winner = debate.play()
 
@@ -88,8 +96,10 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, trut
             while label == lying_agent_label:
                 lying_agent_label = randint(0, 9)
 
-            agent_truth = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
-            agent_lie = Agent(precommit_label=label, agentStrength=rollouts)
+            agent_truth = DebateAgent(
+                precommit_label=lying_agent_label, agentStrength=rollouts
+            )
+            agent_lie = DebateAgent(precommit_label=label, agentStrength=rollouts)
 
             if truth_agent == 0:
                 debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample)

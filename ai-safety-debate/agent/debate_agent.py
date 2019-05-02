@@ -7,10 +7,7 @@ class DebateAgent:
         self.mcts = mcts(iterationLimit=agentStrength)
 
     def get_initial_statement(self):
-        if self.precommit_label is not None:
-            return self.precommit_label
-        else:
-            raise NotImplementedError()
+        return self.precommit_label
 
     def select_move(self, debate):
         """

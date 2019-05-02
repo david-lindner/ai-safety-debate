@@ -2,7 +2,8 @@ import argparse
 import numpy as np
 
 from judge import MNISTJudge, FashionJudge
-from debate import Debate, DebateAgent
+from debate import Debate
+from agent import DebateAgent
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -10,7 +11,7 @@ if __name__ == "__main__":
         "--dataset", type=str, help="Currently only 'mnist' or 'fashion'"
     )
     parser.add_argument(
-        "--N-to-show", type=int, help="Number of features revealed as an input"
+        "--N-to-mask", type=int, help="Number of features revealed as an input"
     )
     parser.add_argument("--judge-path", type=str, help="Path to load the judge from")
     parser.add_argument("--rollouts", type=int, help="Number of rollouts for MCTS")
@@ -19,9 +20,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.dataset == "mnist":
-        judge = MNISTJudge(N_to_mask=args.N_features, model_dir=args.judge_path)
+        judge = MNISTJudge(N_to_mask=args.N_to_mask, model_dir=args.judge_path)
     elif args.dataset == "fashion":
-        judge = FashionJudge(N_to_mask=args.N_features, model_dir=args.judge_path)
+        judge = FashionJudge(N_to_mask=args.N_to_mask, model_dir=args.judge_path)
     else:
         raise Exception("Unknown dataset " + args.dataset)
 
@@ -29,7 +30,7 @@ if __name__ == "__main__":
     N_train = len(judge.train_labels)
     results = np.zeros((N_train, 10))
 
-    for i in range(N_train):
+    for i in range(100):  # N_train):
         for label in range(10):
             sample = train_data[i]
             agent1 = DebateAgent(precommit_label=None, agentStrength=args.rollouts)

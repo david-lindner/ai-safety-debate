@@ -49,7 +49,8 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
         sample_count += 1
         sample = judge.eval_data[sample_id].flatten()
 
-        label = judge.eval_labels[sample_id]
+        # label = judge.eval_labels[sample_id]
+        label = None
 
         if paper_eval:
             for lying_agent_label in range(10):

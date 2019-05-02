@@ -63,7 +63,7 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
                     )
                     agent2 = Agent(precommit_label=label, agentStrength=rollouts)
 
-                    debate = Debate((agent1, agent2), judge, N_to_mask, sample)
+                    debate = Debate((agent1, agent2), judge, N_to_mask, sample, debug=False)
                     this_game_winner = debate.play()
                     if this_game_winner == 0:
                         liar_wins = liar_wins + 1

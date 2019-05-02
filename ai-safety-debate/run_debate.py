@@ -14,7 +14,7 @@ ex.observers.append(FileStorageObserver.create("experiments"))
 @ex.config
 def cfg():
     N_to_mask = 4
-    sample_id = 0
+    sample_id = np.random.randint(100)
     lying_agent_label = 2
     judge_path = None
     dataset = None
@@ -45,7 +45,10 @@ def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts):
     agent1 = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
     agent2 = Agent(precommit_label=label, agentStrength=rollouts)
 
-    debate = Debate((agent1, agent2), judge, N_to_mask, sample)
+    debate = Debate((agent1, agent2), judge, N_to_mask, sample, debug=True)
 
     winner = debate.play()
-    print("Winner", winner)
+    if winner==1:
+        print("Winner: the honest agent")
+    else:
+        print("Winner: the liar")

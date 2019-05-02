@@ -40,11 +40,13 @@ class DebateState:
 
     def getReward(self):
         assert self.isTerminal()
-        # judge returns 0 when the first player wins, 1 when second player wins
-        judge_outcome = self.judge.evaluate_debate(
-            np.stack((self.mask.sum(axis=0), self.sample)), self.initial_statements
+        mask = self.mask.sum(axis=0)
+        winning_player = self.judge.evaluate_debate(
+            np.stack((mask, self.sample * mask), axis=1), self.initial_statements
         )
-        # MCTS needs to get a high reward when first player wins and low number when second wins
-        # the following line returns 0 when pl.1 wins and -1 when pl.2 wins. This is intentional.
-        return judge_outcome * (-1)
-        # return 666
+        if winning_player == 0:
+            return 0
+        elif winning_player == 1:
+            return -1
+        else:
+            raise Exception("Unrecognized result from judge")

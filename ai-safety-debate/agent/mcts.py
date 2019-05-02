@@ -30,17 +30,17 @@ class mcts:
         self,
         timeLimit=None,
         iterationLimit=None,
-        explorationConstant=1 / math.sqrt(2),
+        explorationConstant=1,  # 1 / math.sqrt(2),
         rolloutPolicy=randomPolicy,
     ):
-        if timeLimit != None:
-            if iterationLimit != None:
+        if timeLimit:
+            if iterationLimit:
                 raise ValueError("Cannot have both a time limit and an iteration limit")
             # time taken for each MCTS search in milliseconds
             self.timeLimit = timeLimit
             self.limitType = "time"
         else:
-            if iterationLimit == None:
+            if iterationLimit is None:
                 raise ValueError("Must have either a time limit or an iteration limit")
             # number of iterations of the search
             if iterationLimit < 1:
@@ -65,11 +65,11 @@ class mcts:
         return self.getAction(self.root, bestChild)
 
     def executeRound(self):
-        node = self.selectNode(self.root)
+        node = self.select(self.root)
         reward = self.rollout(node.state)
         self.backpropogate(node, reward)
 
-    def selectNode(self, node):
+    def select(self, node):
         while not node.isTerminal:
             if node.isFullyExpanded:
                 node = self.getBestChild(node, self.explorationConstant)

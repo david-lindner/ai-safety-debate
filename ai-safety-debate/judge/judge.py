@@ -3,15 +3,14 @@ import numpy as np
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
+
 class Judge:
-    def __init__(self, N_to_mask, restore_model_from, save_model_as):
+    def __init__(self, N_to_mask, model_dir):
         self.N_to_mask = N_to_mask
 
         # Create the Estimator
         self.estimator = tf.estimator.Estimator(
-            model_fn = self.model_fn,
-            model_dir = save_model_as,
-            warm_start_from = restore_model_from
+            model_fn=self.model_fn, model_dir=model_dir
         )
 
         # Subclasses need to implement a model_fn with a "softmax_tensor"
@@ -29,10 +28,8 @@ class Judge:
         self.predictor = tf.contrib.predictor.from_estimator(
             self.estimator,
             tf.estimator.export.build_raw_serving_input_receiver_fn(
-                {"masked_x":tf.placeholder(
-                    'float32', 
-                    shape=[None]+self.shape[1:])}
-            )
+                {"masked_x": tf.placeholder(shape=[None, 28, 28, 2], dtype=tf.float32)}
+            ),
         )
 
     def mask_image_batch(self, image_batch):
@@ -75,11 +72,38 @@ class Judge:
         eval_results = self.estimator.evaluate(input_fn=eval_input_fn)
         return eval_results
 
+    def evaluate_accuracy_using_predictor(self):
+        """
+        Evaluates the test set accuracy using the tensorflow predictor instead
+        of the estimator. Can be useful for debugging.
+        """
+        correct = 0
+        count = 0
+        for i in range(len(self.eval_labels)):
+            # print(i)
+            image = self.eval_data[i].flat
+            mask = np.zeros_like(image)
+            while mask.sum() < self.N_to_mask:
+                a = np.random.randint(mask.shape[0])
+                if image[a] > 0:
+                    mask[a] = 1
+            input = np.stack((mask, image * mask), axis=1)
+            input = np.reshape(input, self.shape)
+            prediction = self.predictor({"masked_x": input})
+            probs = prediction["probabilities"][0]
+            pred_label = np.argmax(probs)
+            count += 1
+            if pred_label == self.eval_labels[i]:
+                correct += 1
+            # print(correct / count)
+        return correct / count
+
     def evaluate_debate(self, input, answers):
         assert len(answers) == 2
-        input = np.reshape(input, self.shape) # needed for images
+        input = np.reshape(input, self.shape)  # needed for images
         prediction = self.predictor({"masked_x": input})
         probs = prediction["probabilities"][0]
+        # print("probs", probs)
         if probs[answers[0]] > probs[answers[1]]:
             return 0
         else:

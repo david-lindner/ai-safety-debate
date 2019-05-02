@@ -2,16 +2,17 @@ import tensorflow as tf
 import numpy as np
 from .judge import Judge
 
+
 class FashionJudge(Judge):
     """
     Sparse FashionMnist classifier, based on
     https://www.tensorflow.org/tutorials/estimators/cnn#building_the_cnn_mnist_classifier
     """
 
-    def __init__(self, N_to_mask, restore_model_from = None, save_model_as = None):
+    def __init__(self, N_to_mask, model_dir=None):
         self.batch_size = 128
-        
-        self.shape = [1, 28, 28, 2] # shape for prediction
+
+        self.shape = [1, 28, 28, 2]  # shape for prediction
         # One 28*28 image at a time, paired with a mask
 
         # Load training and eval data
@@ -26,7 +27,7 @@ class FashionJudge(Judge):
         self.eval_data = eval_data / np.float32(255)
         self.eval_labels = eval_labels.astype(np.int32)  # not required
 
-        super().__init__(N_to_mask, restore_model_from, save_model_as)
+        super().__init__(N_to_mask, model_dir)
 
     def model_fn(self, features, labels, mode):
         """Model function for CNN."""

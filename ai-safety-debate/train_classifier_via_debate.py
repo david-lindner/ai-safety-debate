@@ -20,11 +20,19 @@ def cfg():
     N_epochs = 1
     batch_size = 128
     classifier_path = None
+    cheat_debate = False
 
 
 @ex.automain
 def run(
-    N_to_mask, judge_path, dataset, rollouts, N_epochs, batch_size, classifier_path
+    N_to_mask,
+    judge_path,
+    dataset,
+    rollouts,
+    N_epochs,
+    batch_size,
+    classifier_path,
+    cheat_debate,
 ):
     if judge_path:
         path = judge_path
@@ -62,11 +70,14 @@ def run(
             # print("i", i, "label", label)
             # print("i", i, "label2", label2)
 
-            agent1 = DebateAgent(precommit_label=None, agentStrength=rollouts)
-            agent2 = DebateAgent(precommit_label=label, agentStrength=rollouts)
-            debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
-            winner = debate.play()
-            # winner = 1 if label == judge.train_labels[i] else 0
+            if cheat_debate:
+                winner = 1 if label == judge.train_labels[i] else 0
+            else:
+                agent1 = DebateAgent(precommit_label=None, agentStrength=rollouts)
+                agent2 = DebateAgent(precommit_label=label, agentStrength=rollouts)
+                debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
+                winner = debate.play()
+
             weight = 1 if winner == 1 else -1
             # print("weight", weight)
             batch_samples.append(sample)

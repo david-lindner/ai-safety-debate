@@ -58,21 +58,23 @@ def run(
             probs[label] = 0
             probs /= probs.sum()
             label2 = np.random.choice(range(len(probs)), p=probs)
-            print("i", i, "label", label)
-            print("i", i, "label2", label2)
+            # print("i", i, "label", label)
+            # print("i", i, "label2", label2)
 
             agent1 = DebateAgent(precommit_label=label, agentStrength=rollouts)
             agent2 = DebateAgent(precommit_label=label2, agentStrength=rollouts)
             debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
-            winner = debate.play()
+            # winner = debate.play()
             winner = 0 if label == judge.train_labels[i] else 1
             weight = 1 if winner == 0 else 0
-            print("weight", weight)
+            # print("weight", weight)
             batch_samples.append(sample)
             batch_labels.append(label)
             batch_weights.append(weight)
 
             if (i + 1) % batch_size == 0 or i == N_train - 1:
+                print("i", i)
+                print("batch_weights", batch_weights)
                 debate_classifier.train(
                     np.array(batch_samples),
                     np.array(batch_labels),

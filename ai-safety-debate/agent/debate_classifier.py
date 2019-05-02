@@ -7,7 +7,6 @@ class DebateClassifier:
         self.estimator = tf.estimator.Estimator(
             model_fn=self.model_fn, model_dir=model_dir
         )
-        self.writer = tf.summary.FileWriter("tf_log_dir")
 
     def train(self, np_batch, labels, loss_weights):
         batch_size = np_batch.shape[0]

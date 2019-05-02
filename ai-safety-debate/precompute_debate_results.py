@@ -1,6 +1,7 @@
 import argparse
 import functools
 import math
+import time
 import numpy as np
 
 from multiprocessing import Pool
@@ -63,8 +64,12 @@ if __name__ == "__main__":
     # for sp in start_points:
     #     debate_results.append(get_debate_results_partial(sp))
 
+    t = time.time()
+
     with Pool(args.N_threads) as pool:
         debate_results = pool.map(get_debate_results_partial, start_points)
+
+    print("time", time.time() - t)
 
     results = np.array(debate_results)
     results.tofile(args.outfile)

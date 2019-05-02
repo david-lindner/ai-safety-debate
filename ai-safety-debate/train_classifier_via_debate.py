@@ -83,6 +83,9 @@ def run(
                 acc = debate_classifier.evaluate_accuracy(eval_data, eval_labels)
                 print("Updated model")
                 print("Evaluation accuracy", acc)
+                batch_samples = []
+                batch_labels = []
+                batch_weights = []
 
     acc = debate_classifier.evaluate_accuracy(eval_data, eval_labels)
     print("Accuracy", acc)

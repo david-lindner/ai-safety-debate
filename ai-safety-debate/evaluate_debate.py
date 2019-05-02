@@ -30,7 +30,7 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, trut
     elif dataset:
         path = "saved_models/" + dataset + str(N_to_mask)
     else:
-        raise Exception("dataset needs to be specified")
+        raise Exception("Either judge_path or dataset needs to be specified")
 
     if dataset == "mnist":
         judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=path)
@@ -53,19 +53,19 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, trut
 
         if paper_eval:
             for lying_agent_label in range(10):
+                winner = truth_agent
                 print(lying_agent_label)
                 if lying_agent_label == label:
                     continue
-                winner = truth_agent
 
                 lying_agent = (truth_agent + 1)%2
                 liar_wins = 0
 
                 for game in range(3):
-                    agent_truth = Agent(
+                    agent_lie = Agent(
                         precommit_label=lying_agent_label, agentStrength=rollouts
                     )
-                    agent_lie = Agent(precommit_label=label, agentStrength=rollouts)
+                    agent_truth = Agent(precommit_label=label, agentStrength=rollouts)
 
                     if truth_agent == 0:
                         debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample)
@@ -88,8 +88,8 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, trut
             while label == lying_agent_label:
                 lying_agent_label = randint(0, 9)
 
-            agent_truth = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
-            agent_lie = Agent(precommit_label=label, agentStrength=rollouts)
+            agent_lie = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
+            agent_truth = Agent(precommit_label=label, agentStrength=rollouts)
 
             if truth_agent == 0:
                 debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample)

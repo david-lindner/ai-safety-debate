@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-# tf.logging.set_verbosity(tf.logging.INFO)
+tf.logging.set_verbosity(tf.logging.ERROR)
 
 
 class Judge:
@@ -125,22 +125,23 @@ class Judge:
         # or give the unrestricted player the sum of the non-taken labels. The latter is too hard for the pre-commited
         # player, the former takes too long. So we do this weird thing as a cheaper approximation of the former.
         # But beware: it is weird!
-        elif unrestricted_debate==0:
+        elif unrestricted_debate==1:
             first_pl_prob = probs[initial_statements[0]]
             probs[initial_statements[0]] = 0
-            second_pl_prob = probs.max()
+            second_pl_prob = max(probs)
             utility = first_pl_prob - second_pl_prob
-        elif unrestricted_debate==1:
+        elif unrestricted_debate==0:
             second_pl_prob = probs[initial_statements[1]]
             probs[initial_statements[1]] = 0
-            first_pl_prob = probs.max()
+            first_pl_prob = max(probs)
             utility = first_pl_prob - second_pl_prob
         else:
             raise Exception("You should not ever get here!")
 
+
         # convert to binary rewards, breaking ties in favor of player 1 (because whatever)
         if self.binary_rewards:
-            if utility>=0:
+            if utility >= 0:
                 utility = 1
             else:
                 utility = -1

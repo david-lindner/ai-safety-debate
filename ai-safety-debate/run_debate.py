@@ -5,7 +5,7 @@ from sacred.observers import FileStorageObserver
 
 from judge import MNISTJudge, FashionJudge
 from debate import Debate
-from agent import Agent
+from agent import DebateAgent
 
 ex = Experiment("mnist_debate")
 ex.observers.append(FileStorageObserver.create("experiments"))
@@ -42,8 +42,8 @@ def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts):
     label = judge.eval_labels[sample_id]
     assert label != lying_agent_label
 
-    agent1 = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
-    agent2 = Agent(precommit_label=label, agentStrength=rollouts)
+    agent1 = DebateAgent(precommit_label=lying_agent_label, agentStrength=rollouts)
+    agent2 = DebateAgent(precommit_label=label, agentStrength=rollouts)
 
     debate = Debate((agent1, agent2), judge, N_to_mask, sample)
 

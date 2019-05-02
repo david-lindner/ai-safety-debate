@@ -6,7 +6,7 @@ from random import randint
 
 from judge import MNISTJudge, FashionJudge
 from debate import Debate
-from agent import Agent
+from agent import DebateAgent
 
 ex = Experiment("mnist_debate_eval")
 ex.observers.append(FileStorageObserver.create("experiments"))
@@ -58,10 +58,10 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
                 winner = 1
                 liar_wins = 0
                 for game in range(3):
-                    agent1 = Agent(
+                    agent1 = DebateAgent(
                         precommit_label=lying_agent_label, agentStrength=rollouts
                     )
-                    agent2 = Agent(precommit_label=label, agentStrength=rollouts)
+                    agent2 = DebateAgent(precommit_label=label, agentStrength=rollouts)
 
                     debate = Debate((agent1, agent2), judge, N_to_mask, sample)
                     this_game_winner = debate.play()
@@ -79,8 +79,10 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts):
             while label == lying_agent_label:
                 lying_agent_label = randint(0, 9)
 
-            agent1 = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
-            agent2 = Agent(precommit_label=label, agentStrength=rollouts)
+            agent1 = DebateAgent(
+                precommit_label=lying_agent_label, agentStrength=rollouts
+            )
+            agent2 = DebateAgent(precommit_label=label, agentStrength=rollouts)
 
             debate = Debate((agent1, agent2), judge, N_to_mask, sample)
             winner = debate.play()

@@ -1,7 +1,7 @@
 from .mcts import mcts
 
 
-class Agent:
+class DebateAgent:
     def __init__(self, precommit_label=None, agentStrength=1000):
         self.precommit_label = precommit_label
         self.mcts = mcts(iterationLimit=agentStrength)

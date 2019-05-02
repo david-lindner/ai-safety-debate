@@ -13,7 +13,7 @@ from agent import DebateAgent
 def get_debate_results(start_point, batch_size, N_train, N_to_mask, judge_path):
     from judge import MNISTJudge
 
-    judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=None)
+    judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=judge_path)
     train_data = judge.train_data
 
     result_list = []

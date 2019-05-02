@@ -54,7 +54,8 @@ def run(
         for i in range(N_train):
             sample = train_data[i]
             probs = next(debate_classifier.predict(sample))["probabilities"]
-            label = np.random.choice(range(len(probs)), p=probs)
+            # label = np.random.choice(range(len(probs)), p=probs)
+            label = judge.train_labels[i]
             probs[label] = 0
             probs /= probs.sum()
             label2 = np.random.choice(range(len(probs)), p=probs)

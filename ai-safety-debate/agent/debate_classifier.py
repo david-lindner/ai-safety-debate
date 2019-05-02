@@ -2,11 +2,12 @@ import tensorflow as tf
 
 
 class DebateClassifier:
-    def __init__(self, sample_shape=[28, 28], model_dir=None):
+    def __init__(self, sample_shape=[28, 28], model_dir=None, log_dir=None):
         self.sample_shape = sample_shape
         self.estimator = tf.estimator.Estimator(
             model_fn=self.model_fn, model_dir=model_dir
         )
+        self.writer = tf.summary.FileWriter("tf_log_dir")
 
     def train(self, np_batch, labels, loss_weights):
         batch_size = np_batch.shape[0]
@@ -89,6 +90,7 @@ class DebateClassifier:
             loss = tf.losses.sparse_softmax_cross_entropy(
                 labels=labels, logits=logits, weights=loss_weights
             )
+            self.summary.scalar(loss)
         else:
             loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
 

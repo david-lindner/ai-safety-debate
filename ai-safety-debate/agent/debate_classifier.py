@@ -2,17 +2,17 @@ import tensorflow as tf
 
 
 class DebateClassifier:
-    def __init__(self, model_dir=None):
-        self.sample_shape = [28, 28]
+    def __init__(self, sample_shape=[28, 28], model_dir=None):
+        self.sample_shape = sample_shape
         self.estimator = tf.estimator.Estimator(
             model_fn=self.model_fn, model_dir=model_dir
         )
 
-    def train(self, np_batch, labels):
+    def train(self, np_batch, labels, loss_weights):
         batch_size = np_batch.shape[0]
         # Train for one batch
         train_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={"x": np_batch},
+            x={"x": np_batch, "loss_weights": loss_weights},
             y=labels,
             batch_size=batch_size,
             num_epochs=1,
@@ -77,7 +77,13 @@ class DebateClassifier:
             return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
 
         # Calculate Loss (for both TRAIN and EVAL modes)
-        loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
+        if mode == tf.estimator.ModeKeys.TRAIN:
+            loss_weights = features["loss_weights"]
+            loss = tf.losses.sparse_softmax_cross_entropy(
+                labels=labels, logits=logits, weights=loss_weights
+            )
+        else:
+            loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
 
         # Configure the Training Op (for TRAIN mode)
         if mode == tf.estimator.ModeKeys.TRAIN:

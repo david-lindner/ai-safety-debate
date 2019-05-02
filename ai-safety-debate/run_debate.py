@@ -17,18 +17,19 @@ def cfg():
     sample_id = np.random.randint(100)
     lying_agent_label = 2
     judge_path = None
-    dataset = None
+    dataset = "mnist"
     rollouts = 1000
+    truth_agent = 0
 
 
 @ex.automain
-def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts):
+def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts, index_of_truth_agent):
     if judge_path:
         path = judge_path
     elif dataset:
         path = "saved_models/" + dataset + str(N_to_mask)
     else:
-        raise Exception("Either judge_path or dataset needs to be specified")
+        raise Exception("dataset must be specified")
 
     if dataset == "mnist":
         judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=path)
@@ -43,10 +44,13 @@ def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts):
     if lying_agent_label==label:
         lying_agent_label = (lying_agent_label + 1) % 10
 
-    agent1 = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
-    agent2 = Agent(precommit_label=label, agentStrength=rollouts)
+    agent_lie = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
+    agent_truth = Agent(precommit_label=label, agentStrength=rollouts)
 
-    debate = Debate((agent1, agent2), judge, N_to_mask, sample, debug=False)
+    if index_of_truth_agent == 0:
+        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample, debug=False)
+    else:
+        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample, debug=False)
 
     utility = debate.play()
     if utility==1:
@@ -56,4 +60,4 @@ def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts):
     elif utility==-1:
         print("Winner: truth")
     else:
-        print("Utility of the honest agent: ", utility*(-1)," (1=win, -1 = loss)")
+        print("Utility of the honest agent: ", utility*(-1)," (1=win, -1 = loss)")if truth_agent == winner:

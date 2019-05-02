@@ -67,3 +67,4 @@ if __name__ == "__main__":
         debate_results = pool.map(get_debate_results_partial, start_points)
 
     results = np.array(debate_results)
+    results.tofile(args.outfile)

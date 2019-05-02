@@ -52,21 +52,21 @@ def run(
 
     for epoch in range(N_epochs):
         for i in range(N_train):
+            print(i)
             sample = train_data[i]
             probs = next(debate_classifier.predict(sample))["probabilities"]
             label = np.random.choice(range(len(probs)), p=probs)
             # label = judge.train_labels[i]
             probs[label] = 0
             probs /= probs.sum()
-            label2 = np.random.choice(range(len(probs)), p=probs)
             # print("i", i, "label", label)
             # print("i", i, "label2", label2)
 
-            agent1 = DebateAgent(precommit_label=label2, agentStrength=rollouts)
+            agent1 = DebateAgent(precommit_label=None, agentStrength=rollouts)
             agent2 = DebateAgent(precommit_label=label, agentStrength=rollouts)
             debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
-            # winner = debate.play()
-            winner = 1 if label == judge.train_labels[i] else 0
+            winner = debate.play()
+            # winner = 1 if label == judge.train_labels[i] else 0
             weight = 1 if winner == 1 else -1
             # print("weight", weight)
             batch_samples.append(sample)

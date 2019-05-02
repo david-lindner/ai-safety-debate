@@ -16,15 +16,16 @@ ex.observers.append(FileStorageObserver.create("experiments"))
 def cfg():
     N_to_mask = 4
     judge_path = None
+    # judge_path = "./mnist2000judge"
     dataset = "mnist"
-    nmbr_samples = 100
-    paper_eval = True
+    nmbr_samples = 10
     rollouts = 100
-    truth_agent = 0
-
+    paper_eval = False
+    index_of_truth_agent = 0
 
 @ex.automain
-def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, truth_agent):
+def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, index_of_truth_agent=0):
+    # parse parameters
     if judge_path:
         path = judge_path
     elif dataset:
@@ -42,85 +43,75 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, trut
     if not nmbr_samples:
         nmbr_samples = len(judge.eval_data)
 
-    truth_agent_wins = 0
-    sample_count = 0
-
+    # run debate for each sample
+    overall_truth_win_count = 0
     for sample_id in range(nmbr_samples):
-        sample_count += 1
         sample = judge.eval_data[sample_id].flatten()
-
         label = judge.eval_labels[sample_id]
+        truth_won = True
 
+        # repeat the experiment from AI safety via debate paper
         if paper_eval:
             for lying_agent_label in range(10):
-                winner = truth_agent
-                print(lying_agent_label)
                 if lying_agent_label == label:
                     continue
-
-                lying_agent = (truth_agent + 1)%2
-                liar_wins = 0
-
-                for game in range(3):
-                    agent_lie = Agent(
-                        precommit_label=lying_agent_label, agentStrength=rollouts
-                    )
+                print(lying_agent_label, end="-", flush=True)
+                liar_win_count = 0
+                for game_number in range(3):
+                    agent_lie = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
                     agent_truth = Agent(precommit_label=label, agentStrength=rollouts)
-
-                    if truth_agent == 0:
-                        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample)
+                    # TODO this will do weird stuff if the utilities are non-binary. Works if they are either 1 or -1.
+                    if index_of_truth_agent == 0:
+                        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample, debug=False)
+                        this_game_utility = debate.play()
+                        if this_game_utility == -1:
+                            liar_win_count += 1
                     else:
-                        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample)
-
-                    this_game_winner = debate.play()
-
-                    if this_game_winner == lying_agent:
-                        liar_wins = liar_wins + 1
-                    if liar_wins == 2 or (liar_wins == 0 and game == 1):
+                        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample, debug=False)
+                        this_game_utility = debate.play()
+                        if this_game_utility == 1:
+                            liar_win_count += 1
+                    if liar_win_count == 2 or (liar_win_count == 0 and game_number == 1):
                         break
-
-                if liar_wins >= 2:
-                    winner = lying_agent
+                if liar_win_count >= 2:
+                    truth_won = False
                     break
 
-        else:  # fast evaluation with random  lying label
+        # fast evaluation with random  lying label
+        if not paper_eval:
             lying_agent_label = randint(0, 9)
             while label == lying_agent_label:
                 lying_agent_label = randint(0, 9)
+            lying_agent_label = None
 
             agent_lie = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
             agent_truth = Agent(precommit_label=label, agentStrength=rollouts)
 
-            if truth_agent == 0:
-                debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample)
+            if index_of_truth_agent == 0:
+                debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample, debug=False)
+                this_game_utility = debate.play()
+                if this_game_utility == -1:
+                    truth_won = False
             else:
-                debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample)
-            winner = debate.play()
-
-        if winner != truth_agent:
-            print(":(")
-            print(
-                "Sample {}:  Truth wins {} out of {} ({}%)".format(
-                    sample_count,
-                    truth_agent_wins,
-                    sample_count,
-                    100 * truth_agent_wins / sample_count,
-                )
-            )
+                debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample, debug=False)
+                this_game_utility = debate.play()
+                if this_game_utility == 1:
+                    truth_won = False
+        if truth_won:
+            overall_truth_win_count += 1
+            print("\t Winner: Truth.", end=" ")
         else:
-            truth_agent_wins = truth_agent_wins + 1
-            print(":)")
-            print(
-                "Sample {}:  Truth wins {} out of {} ({}%)".format(
-                    sample_count,
-                    truth_agent_wins,
-                    sample_count,
-                    100 * truth_agent_wins / sample_count,
-                )
+            print("\t Winner: Liar.", end=" ")
+        print(
+            "Truth winrate: {} out of {} ({}%)".format(
+                overall_truth_win_count,
+                sample_id+1,
+                100 * overall_truth_win_count / (sample_id+1),
             )
+        )
 
     print(
-        "Result:  Truth wins {} out of {} ({}%)".format(
-            truth_agent_wins, nmbr_samples, 100 * truth_agent_wins / nmbr_samples
+        "Overall truth winrate: {} out of {} ({}%)".format(
+            overall_truth_win_count, nmbr_samples, 100 * overall_truth_win_count / nmbr_samples
         )
     )

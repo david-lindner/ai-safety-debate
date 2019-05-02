@@ -10,7 +10,8 @@ class Agent:
         if self.precommit_label is not None:
             return self.precommit_label
         else:
-            raise NotImplementedError()
+            # raise NotImplementedError()
+            return None
 
     def select_move(self, debate):
         """

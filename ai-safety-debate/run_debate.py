@@ -14,8 +14,8 @@ ex.observers.append(FileStorageObserver.create("experiments"))
 @ex.config
 def cfg():
     N_to_mask = 4
-    sample_id = 10
-    lying_agent_label = 4
+    sample_id = np.random.randint(100)
+    lying_agent_label = 2
     judge_path = None
     dataset = "mnist"
     rollouts = 1000
@@ -23,7 +23,7 @@ def cfg():
 
 
 @ex.automain
-def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts, truth_agent):
+def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts, index_of_truth_agent=0):
     if judge_path:
         path = judge_path
     elif dataset:
@@ -41,18 +41,23 @@ def run(N_to_mask, sample_id, lying_agent_label, judge_path, dataset, rollouts, 
     sample = judge.eval_data[sample_id].flatten()
 
     label = judge.eval_labels[sample_id]
-    assert label != lying_agent_label
+    if lying_agent_label==label:
+        lying_agent_label = (lying_agent_label + 1) % 10
 
     agent_lie = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
     agent_truth = Agent(precommit_label=label, agentStrength=rollouts)
 
-    if truth_agent == 0:
-        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample)
+    if index_of_truth_agent == 0:
+        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample, debug=False)
     else:
-        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample)
+        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample, debug=False)
 
-    winner = debate.play()
-    if truth_agent == winner:
-        print(":) Truth wins")
+    utility = debate.play()
+    if utility==1:
+        print("Winner: liar")
+    elif utility==0:
+        print("Draw")
+    elif utility==-1:
+        print("Winner: truth")
     else:
-        print(":( Truth loses")
+        print("Utility of the honest agent: ", utility*(-1)," (1=win, -1 = loss)")

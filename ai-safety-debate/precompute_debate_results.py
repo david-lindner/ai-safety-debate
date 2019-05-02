@@ -30,8 +30,10 @@ if __name__ == "__main__":
     N_train = len(judge.train_labels)
     results = np.zeros((N_train, 10))
 
-    for i in range(100):  # N_train):
+    for i in range(10):  # N_train):
+        print("i", i)
         for label in range(10):
+            print("label", label)
             sample = train_data[i]
             agent1 = DebateAgent(precommit_label=None, agentStrength=args.rollouts)
             agent2 = DebateAgent(precommit_label=label, agentStrength=args.rollouts)

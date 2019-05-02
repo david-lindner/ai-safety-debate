@@ -10,7 +10,9 @@ if __name__ == "__main__":
         "--N-to-mask", type=int, help="Number of features revealed as an input"
     )
     parser.add_argument("--train-steps", type=int, help="Number of training steps")
-    parser.add_argument("--path", type=str, help="Path to save the trained judge to (and restore from)")
+    parser.add_argument(
+        "--path", type=str, help="Path to save the trained judge to (and restore from)"
+    )
     args = parser.parse_args()
 
     path = args.path or "saved_models/" + args.dataset + str(args.N_to_mask)

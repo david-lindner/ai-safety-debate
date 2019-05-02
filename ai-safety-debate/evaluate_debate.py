@@ -15,7 +15,7 @@ ex.observers.append(FileStorageObserver.create("experiments"))
 @ex.config
 def cfg():
     N_to_mask = 4
-    judge_path = "./mnist2000judge"
+    judge_path = None
     dataset = "mnist"
     nmbr_samples = 100
     paper_eval = True
@@ -30,7 +30,7 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, trut
     elif dataset:
         path = "saved_models/" + dataset + str(N_to_mask)
     else:
-        raise Exception("Either judge_path or dataset needs to be specified")
+        raise Exception("dataset needs to be specified")
 
     if dataset == "mnist":
         judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=path)

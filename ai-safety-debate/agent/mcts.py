@@ -33,14 +33,14 @@ class mcts:
         explorationConstant=1,  # 1 / math.sqrt(2),
         rolloutPolicy=randomPolicy,
     ):
-        if timeLimit != None:
-            if iterationLimit != None:
+        if timeLimit:
+            if iterationLimit:
                 raise ValueError("Cannot have both a time limit and an iteration limit")
             # time taken for each MCTS search in milliseconds
             self.timeLimit = timeLimit
             self.limitType = "time"
         else:
-            if iterationLimit == None:
+            if iterationLimit is None:
                 raise ValueError("Must have either a time limit or an iteration limit")
             # number of iterations of the search
             if iterationLimit < 1:

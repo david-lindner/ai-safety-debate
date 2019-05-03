@@ -18,7 +18,7 @@ def cfg():
     rollouts = 10
     eval_unrestricted = False
     index_of_truth_agent = 0
-    simultaneous = True
+    simultaneous = False
 
 
 @ex.automain

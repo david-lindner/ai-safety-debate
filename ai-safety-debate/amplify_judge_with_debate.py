@@ -1,8 +1,5 @@
-import numpy as np
-
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
-from random import randint
 
 from judge import MNISTJudge, FashionJudge
 from debate import Debate
@@ -16,11 +13,10 @@ ex.observers.append(FileStorageObserver.create("amplification_experiments"))
 def cfg():
     N_to_mask = 4
     judge_path = None
-    # judge_path = "./mnist2000judge"
     dataset = "mnist"
-    nmbr_samples = 10
+    nmbr_samples = 100
     rollouts = 100
-    paper_eval = False
+    eval_unrestricted = False
     index_of_truth_agent = 0
 
 
@@ -30,9 +26,9 @@ def run(
     judge_path,
     dataset,
     nmbr_samples,
-    paper_eval,
+    eval_unrestricted,
     rollouts,
-    index_of_truth_agent=0,
+    index_of_truth_agent,
 ):
     # parse parameters
     if judge_path:
@@ -59,8 +55,8 @@ def run(
         label = judge.eval_labels[sample_id]
         truth_won = True
 
-        # repeat the experiment from AI safety via debate paper
-        if paper_eval:
+        # reproduce the experiment from AI safety via debate paper
+        if not eval_unrestricted:
             for lying_agent_label in range(10):
                 if lying_agent_label == label:
                     continue
@@ -83,7 +79,7 @@ def run(
                             debug=False,
                         )
                         this_game_utility = debate.play()
-                        if this_game_utility == -1:
+                        if this_game_utility == -1:  # second agent won (lying)
                             liar_win_count += 1
                     else:
                         debate = Debate(
@@ -94,7 +90,7 @@ def run(
                             debug=False,
                         )
                         this_game_utility = debate.play()
-                        if this_game_utility == 1:
+                        if this_game_utility == 1:  # first agent won
                             liar_win_count += 1
                     if liar_win_count == 2 or (
                         liar_win_count == 0 and game_number == 1
@@ -104,16 +100,9 @@ def run(
                     truth_won = False
                     break
 
-        # fast evaluation with random  lying label
-        if not paper_eval:
-            lying_agent_label = randint(0, 9)
-            while label == lying_agent_label:
-                lying_agent_label = randint(0, 9)
-            lying_agent_label = None
-
-            agent_lie = DebateAgent(
-                precommit_label=lying_agent_label, agentStrength=rollouts
-            )
+        # evaluate unrestricted
+        else:
+            agent_lie = DebateAgent(precommit_label=None, agentStrength=rollouts)
             agent_truth = DebateAgent(precommit_label=label, agentStrength=rollouts)
 
             if index_of_truth_agent == 0:

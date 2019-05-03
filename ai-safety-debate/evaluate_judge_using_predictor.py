@@ -1,4 +1,9 @@
-### small script used for debugging
+"""
+Minor script used for debugging.
+
+The purpose is to ensure the judge's 'predictor' and 'estimator' yield the same
+prediction accuracy (because they are supposed to contain the same model).
+"""
 
 from judge import MNISTJudge, FashionJudge
 

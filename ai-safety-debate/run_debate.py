@@ -5,7 +5,7 @@ from sacred.observers import FileStorageObserver
 
 from judge import MNISTJudge, FashionJudge
 from debate import Debate
-from agent import DebateAgent
+from agent import DebateAgent, DebatePlayers
 
 ex = Experiment("mnist_debate")
 ex.observers.append(FileStorageObserver.create("experiments"))
@@ -18,9 +18,10 @@ def cfg():
     lying_agent_label = 2
     judge_path = None
     dataset = "mnist"
-    rollouts = 10
-    index_of_truth_agent = 0
-    changing_sides = True
+    rollouts = 1000
+    index_of_our_agent = 1
+    binary_rewards = False
+    changing_sides = False
 
 
 @ex.automain
@@ -31,7 +32,8 @@ def run(
     judge_path,
     dataset,
     rollouts,
-    index_of_truth_agent,
+    index_of_our_agent,
+    binary_rewards,
     changing_sides
 ):
     if judge_path:
@@ -42,9 +44,9 @@ def run(
         raise Exception("dataset must be specified")
 
     if dataset == "mnist":
-        judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=path)
+        judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=path, binary_rewards=binary_rewards)
     elif dataset == "fashion":
-        judge = FashionJudge(N_to_mask=N_to_mask, model_dir=path)
+        judge = FashionJudge(N_to_mask=N_to_mask, model_dir=path, binary_rewards=binary_rewards)
     else:
         raise Exception("Unknown dataset in " + "dataset.txt: " + dataset)
 
@@ -56,24 +58,9 @@ def run(
 
     agent_lie = DebateAgent(precommit_label=lying_agent_label, agentStrength=rollouts)
     agent_truth = DebateAgent(precommit_label=label, agentStrength=rollouts)
+    assert index_of_our_agent in [0, 1]
+    player_description = DebatePlayers(agent_truth, agent_lie, index_of_our_agent, our_name="truth", opp_name="liar")
 
-    if index_of_truth_agent == 0:
-        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample, debug=False, changing_sides=changing_sides)
-    else:
-        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample, debug=False, changing_sides=changing_sides)
-
+    debate = Debate(player_description.agents, judge, N_to_mask, sample, debug=False, changing_sides=changing_sides)
     utility = debate.play()
-    if utility == 1:
-        if index_of_truth_agent == 0:
-            print("Winner: truth")
-        else:
-            print("Winner: liar")
-    elif utility == 0:
-        print("Draw")
-    elif utility == -1:
-        if index_of_truth_agent == 0:
-            print("Winner: liar")
-        else:
-            print("Winner: truth")
-    else:
-        print("Utility of the honest agent: ", utility * (-1), " (1=win, -1 = loss)")
+    player_description.print_debate_result(utility, label)

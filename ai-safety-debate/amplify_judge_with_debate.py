@@ -15,8 +15,8 @@ def cfg():
     judge_path = None
     dataset = "mnist"
     nmbr_samples = None
-    rollouts = 100
     eval_unrestricted = False
+    rollouts = 100
     index_of_truth_agent = 0
     changing_sides = True
 
@@ -111,14 +111,24 @@ def run(
 
             if index_of_truth_agent == 0:
                 debate = Debate(
-                    (agent_truth, agent_lie), judge, N_to_mask, sample, debug=False, changing_sides=changing_sides,
+                    (agent_truth, agent_lie),
+                    judge,
+                    N_to_mask,
+                    sample,
+                    debug=False,
+                    changing_sides=changing_sides,
                 )
                 this_game_utility = debate.play()
                 if this_game_utility == -1:
                     truth_won = False
             else:
                 debate = Debate(
-                    (agent_lie, agent_truth), judge, N_to_mask, sample, debug=False, changing_sides=changing_sides,
+                    (agent_lie, agent_truth),
+                    judge,
+                    N_to_mask,
+                    sample,
+                    debug=False,
+                    changing_sides=changing_sides,
                 )
                 this_game_utility = debate.play()
                 if this_game_utility == 1:
@@ -133,7 +143,8 @@ def run(
                 overall_truth_win_count,
                 sample_id + 1,
                 100 * overall_truth_win_count / (sample_id + 1),
-            )
+            ),
+            flush=True,
         )
 
     print(
@@ -141,5 +152,6 @@ def run(
             overall_truth_win_count,
             nmbr_samples,
             100 * overall_truth_win_count / nmbr_samples,
-        )
+        ),
+        flush=True,
     )

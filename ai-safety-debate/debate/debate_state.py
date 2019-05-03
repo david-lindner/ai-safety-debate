@@ -44,5 +44,5 @@ class DebateState:
         utility = self.judge.evaluate_debate(
             np.stack((mask, self.sample * mask), axis=1), self.initial_statements
         )
-        assert -1 <= utility & utility <= 1
+        assert -1 <= utility and utility <= 1
         return utility

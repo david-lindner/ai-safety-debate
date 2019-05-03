@@ -20,7 +20,7 @@ def cfg():
     N_epochs = 1
     batch_size = 128
     classifier_path = None
-    cheat_debate = False
+    cheat_debate = True
 
 
 @ex.automain

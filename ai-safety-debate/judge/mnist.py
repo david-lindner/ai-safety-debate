@@ -9,7 +9,7 @@ class MNISTJudge(Judge):
     https://www.tensorflow.org/tutorials/estimators/cnn#building_the_cnn_mnist_classifier
     """
 
-    def __init__(self, N_to_mask, model_dir=None):
+    def __init__(self, N_to_mask, model_dir=None, binary_rewards=True):
         self.batch_size = 128
 
         self.shape = [1, 28, 28, 2]  # shape for prediction
@@ -27,7 +27,7 @@ class MNISTJudge(Judge):
         self.eval_data = eval_data / np.float32(255)
         self.eval_labels = eval_labels.astype(np.int32)  # not required
 
-        super().__init__(N_to_mask, model_dir)
+        super().__init__(N_to_mask, model_dir, binary_rewards)
 
     def model_fn(self, features, labels, mode):
         """Model function for CNN."""

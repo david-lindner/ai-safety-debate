@@ -14,7 +14,7 @@ def cfg():
     N_to_mask = 4
     judge_path = None
     dataset = "mnist"
-    nmbr_samples = 100
+    nmbr_samples = None
     rollouts = 100
     eval_unrestricted = False
     index_of_truth_agent = 0
@@ -129,7 +129,8 @@ def run(
                 overall_truth_win_count,
                 sample_id + 1,
                 100 * overall_truth_win_count / (sample_id + 1),
-            )
+            ),
+            flush=True,
         )
 
     print(
@@ -137,5 +138,6 @@ def run(
             overall_truth_win_count,
             nmbr_samples,
             100 * overall_truth_win_count / nmbr_samples,
-        )
+        ),
+        flush=True,
     )

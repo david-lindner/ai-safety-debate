@@ -4,7 +4,13 @@ import copy
 
 class DebateState:
     def __init__(
-        self, sample, initial_statements, judge, moves_left=6, starting_player=0, player_order=None
+        self,
+        sample,
+        initial_statements,
+        judge,
+        moves_left=6,
+        starting_player=0,
+        player_order=None,
     ):
         # debate has to tell the state how many moves can we make
         self.sample = sample
@@ -30,8 +36,12 @@ class DebateState:
         newState.mask = np.copy(self.mask)
         newState.mask[newState.currentPlayer, action] = 1
         newState.moves_left -= 1
-        if newState.player_order[-newState.moves_left] != 0 and newState.player_order[-newState.moves_left] != 1:
-            raise Exception("Player order elemenst can be only either 0 or 1 ")
+        moves_past = len(newState.player_order) - newState.moves_left
+        if (
+            newState.player_order[moves_past] != 0
+            and newState.player_order[moves_past] != 1
+        ):
+            raise Exception("Player order elements can be only either 0 or 1 ")
         newState.currentPlayer = newState.player_order[-newState.moves_left]
         return newState
 

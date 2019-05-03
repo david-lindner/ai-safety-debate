@@ -15,8 +15,8 @@ def cfg():
     judge_path = None
     dataset = "mnist"
     nmbr_samples = None
-    rollouts = 100
     eval_unrestricted = False
+    rollouts = 100
     index_of_truth_agent = 0
     changing_sides = True
 

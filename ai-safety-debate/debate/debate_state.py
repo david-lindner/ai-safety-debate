@@ -36,21 +36,26 @@ class DebateState:
         newState.mask = np.copy(self.mask)
         newState.mask[newState.currentPlayer, action] = 1
         newState.moves_left -= 1
-        moves_past = len(newState.player_order) - newState.moves_left
-        if (
-            newState.player_order[moves_past] != 0
-            and newState.player_order[moves_past] != 1
-        ):
-            raise Exception("Player order elements can be only either 0 or 1 ")
-        newState.currentPlayer = newState.player_order[-newState.moves_left]
+        if newState.moves_left == 0:
+            newState.currentPlayer = None
+        else:
+            moves_past = len(newState.player_order) - newState.moves_left
+            if (
+                newState.player_order[moves_past] != 0
+                and newState.player_order[moves_past] != 1
+            ):
+                raise Exception("Player order elements can be only either 0 or 1 ")
+            newState.currentPlayer = newState.player_order[moves_past]
         return newState
 
     def maximizerNode(self):
         # return +1 if the current player is a maximizer, -1 if they are a minimizer
         if self.currentPlayer == 0:
             return 1
-        else:
+        elif self.currentPlayer == 1:
             return -1
+        else:
+            return None
 
     def isTerminal(self):
         assert self.moves_left >= 0

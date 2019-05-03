@@ -79,7 +79,7 @@ def run(
                             N_to_mask,
                             sample,
                             debug=False,
-                            simultaneous=simultaneous,
+                            changing_sides=changing_sides,
                         )
                         this_game_utility = debate.play()
                         if this_game_utility == -1:  # second agent won (lying)
@@ -91,7 +91,7 @@ def run(
                             N_to_mask,
                             sample,
                             debug=False,
-                            simultaneous=simultaneous,
+                            changing_sides=changing_sides,
                         )
                         this_game_utility = debate.play()
                         if this_game_utility == 1:  # first agent won

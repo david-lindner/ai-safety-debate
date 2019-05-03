@@ -28,7 +28,7 @@ def run(
     nmbr_samples,
     eval_unrestricted,
     rollouts,
-    index_of_truth_agent=0,
+    index_of_truth_agent,
 ):
     # parse parameters
     if judge_path:
@@ -79,7 +79,7 @@ def run(
                             debug=False,
                         )
                         this_game_utility = debate.play()
-                        if this_game_utility == -1:
+                        if this_game_utility == -1:  # second agent won (lying)
                             liar_win_count += 1
                     else:
                         debate = Debate(
@@ -90,7 +90,7 @@ def run(
                             debug=False,
                         )
                         this_game_utility = debate.play()
-                        if this_game_utility == 1:
+                        if this_game_utility == 1:  # first agent won
                             liar_win_count += 1
                     if liar_win_count == 2 or (
                         liar_win_count == 0 and game_number == 1

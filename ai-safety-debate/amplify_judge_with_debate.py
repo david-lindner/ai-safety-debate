@@ -67,10 +67,12 @@ def run(
                 print(lying_agent_label, end="-", flush=True)
                 liar_win_count = 0
                 for game_number in range(3):
-                    agent_lie = Agent(
+                    agent_lie = DebateAgent(
                         precommit_label=lying_agent_label, agentStrength=rollouts
                     )
-                    agent_truth = Agent(precommit_label=label, agentStrength=rollouts)
+                    agent_truth = DebateAgent(
+                        precommit_label=label, agentStrength=rollouts
+                    )
                     # TODO this will do weird stuff if the utilities are non-binary. Works if they are either 1 or -1.
                     if index_of_truth_agent == 0:
                         debate = Debate(
@@ -109,8 +111,10 @@ def run(
                 lying_agent_label = randint(0, 9)
             lying_agent_label = None
 
-            agent_lie = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
-            agent_truth = Agent(precommit_label=label, agentStrength=rollouts)
+            agent_lie = DebateAgent(
+                precommit_label=lying_agent_label, agentStrength=rollouts
+            )
+            agent_truth = DebateAgent(precommit_label=label, agentStrength=rollouts)
 
             if index_of_truth_agent == 0:
                 debate = Debate(

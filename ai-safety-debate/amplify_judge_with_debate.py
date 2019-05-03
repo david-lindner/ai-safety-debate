@@ -14,8 +14,8 @@ def cfg():
     N_to_mask = 4
     judge_path = None
     dataset = "mnist"
-    nmbr_samples = 100
-    rollouts = 10
+    nmbr_samples = None
+    rollouts = 100
     eval_unrestricted = False
     index_of_truth_agent = 0
     changing_sides = True

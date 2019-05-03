@@ -21,7 +21,7 @@ def get_debate_results(start_point, batch_size, N_train, N_to_mask, judge_path):
         print("i", start_point + i, flush=True)
         if start_point + i > N_train:
             break
-        results_per_label = np.zeros( [10, 10] )
+        results_per_label = np.zeros([10, 10])
         for label in range(10):
             # print("label", label)
             sample = train_data[start_point + i]

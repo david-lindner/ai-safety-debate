@@ -2,6 +2,11 @@ from .mcts import mcts
 
 
 class DebateAgent:
+    """
+    An agent that can play debate.
+    Keeps their own MCTS instance (but resets the MCTS tree everytime its select_move is called.
+    Selecting NONE for precommit label means that the agent argues for "the other guy is incorrect".
+    """
     def __init__(self, precommit_label=None, agentStrength=1000):
         self.precommit_label = precommit_label
         self.mcts = mcts(iterationLimit=agentStrength)
@@ -13,13 +18,18 @@ class DebateAgent:
         """
         Returns next move the agent wants to make
         """
-        current_state = debate.currentState
+        current_state = debate.current_state
         assert not current_state.isTerminal()
         action = self.mcts.search(initialState=current_state)
         return action
 
 
 class DebatePlayers:
+    """
+    Keeps a pair of agents together with their names.
+    The "agent we are interested in" might sometimes play first, and sometimes second.
+    The main purpose of this class is enable printing and interpreting debate results without worrying about this.
+    """
     def __init__(self, our_agent, opp_agent, index_of_our_agent=1, our_name="truth", opp_name="liar"):
         assert index_of_our_agent in [0, 1]
         if index_of_our_agent == 0:

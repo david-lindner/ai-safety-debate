@@ -78,7 +78,7 @@ def run(
                 debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
                 winner = debate.play()
 
-            weight = 1 if winner == 1 else -1
+            weight = 1 if winner == -1 else -1
             # print("weight", weight)
             batch_samples.append(sample)
             batch_labels.append(label)

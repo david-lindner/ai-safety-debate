@@ -56,7 +56,7 @@ def run(
         truth_won = True
 
         # reproduce the experiment from AI safety via debate paper
-        if eval_unrestricted:
+        if not eval_unrestricted:
             for lying_agent_label in range(10):
                 if lying_agent_label == label:
                     continue

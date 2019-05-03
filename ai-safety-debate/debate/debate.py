@@ -72,14 +72,15 @@ class Debate:
             self.current_state = self.current_state.takeAction(action)
             if self.debug and visualization_available:
                 plot_image_mask(self.current_state)
+        mask = self.current_state.mask.sum(axis=0)
         if full_report:
-            probabilities = self.judge.evaluate_debate(
-                np.stack([self.current_state.mask.sum(axis=0), self.sample], axis=1)
+            probabilities = self.judge.full_report(
+                np.stack([mask, self.sample * mask], axis=1)
             )
             return probabilities
         else:
             utility = self.judge.evaluate_debate(
-                np.stack([self.current_state.mask.sum(axis=0), self.sample], axis=1),
+                np.stack([mask, self.sample * mask], axis=1),
                 self.initial_statements,
             )
             return utility

@@ -7,26 +7,27 @@ class FashionJudge(Judge):
     """
     Sparse FashionMnist classifier, based on
     https://www.tensorflow.org/tutorials/estimators/cnn#building_the_cnn_mnist_classifier
+    Much of the tutorial code has been moved into the superclass in judge.py
     """
 
     def __init__(self, N_to_mask, model_dir=None, binary_rewards=True):
         self.batch_size = 128
 
-        self.shape = [1, 28, 28, 2]  # shape for prediction
-        # One 28*28 image at a time, paired with a mask
+        # shape used for prediction (see evaluate_debate and update_predictor in judge.py)
+        # 1 image at a time, of size 28 by 28, paired with a mask
+        self.shape = [1, 28, 28, 2]  
 
         # Load training and eval data
         (
             (train_data, train_labels),
             (eval_data, eval_labels),
         ) = tf.keras.datasets.fashion_mnist.load_data()
-
         self.train_data = train_data / np.float32(255)
-        self.train_labels = train_labels.astype(np.int32)  # not required
-
+        self.train_labels = train_labels.astype(np.int32) # astype maybe not required
         self.eval_data = eval_data / np.float32(255)
-        self.eval_labels = eval_labels.astype(np.int32)  # not required
+        self.eval_labels = eval_labels.astype(np.int32)
 
+        # The rest of the initialization is handled by the superclass
         super().__init__(N_to_mask, model_dir, binary_rewards)
 
     def model_fn(self, features, labels, mode):
@@ -70,15 +71,15 @@ class FashionJudge(Judge):
         # Logits Layer
         logits = tf.layers.dense(inputs=dropout, units=10)
 
-        softmax_tensor = tf.nn.softmax(logits, name="softmax_tensor")
         predictions = {
             # Generate predictions (for PREDICT and EVAL mode)
             "classes": tf.argmax(input=logits, axis=1),
             # Add `softmax_tensor` to the graph. It is used for PREDICT and by the
             # `logging_hook`.
-            "probabilities": softmax_tensor,
+            "probabilities": tf.nn.softmax(logits, name="softmax_tensor")
         }
 
+        # The predictor in judge.py automatically uses ModeKeys.PREDICT
         if mode == tf.estimator.ModeKeys.PREDICT:
             return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
 

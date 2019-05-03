@@ -1,3 +1,8 @@
+"""
+Run an individual debate and plots an image and returns the results.
+"""
+
+
 import numpy as np
 
 from sacred import Experiment
@@ -7,7 +12,7 @@ from judge import MNISTJudge, FashionJudge
 from debate import Debate
 from agent import DebateAgent, DebatePlayers
 
-ex = Experiment("mnist_debate")
+ex = Experiment("run_debate")
 ex.observers.append(FileStorageObserver.create("experiments"))
 
 
@@ -15,7 +20,7 @@ ex.observers.append(FileStorageObserver.create("experiments"))
 def cfg():
     N_to_mask = 4
     sample_id = np.random.randint(100)
-    lying_agent_label = 2
+    lying_agent_label = None
     judge_path = None
     dataset = "mnist"
     rollouts = 1000
@@ -34,12 +39,12 @@ def run(
     rollouts,
     index_of_true_agent,
     binary_rewards,
-    changing_sides
+    changing_sides,
 ):
     """
-    Runs one debate game on a given sample from a specified dataset (either "mnist" or "fashion") with N_to_mask rounds. 
+    Runs one debate game on a given sample from a specified dataset (either "mnist" or "fashion") with N_to_mask rounds.
     The debate is modeled by MCTS with given number of rollouts.
-    One player is the honest agents arguing for the correct label, the other either precommits to a lying_agent_label or debates without precommit if lying_agent_label is set to None. 
+    One player is the honest agents arguing for the correct label, the other either precommits to a lying_agent_label or debates without precommit if lying_agent_label is set to None.
 
     index_of_true_agent: Either 0 or 1 whether the honest agent plays first or second.
     binary_rewards: If set to True, rewards are either 1 or -1, if set False rewards lie between -1 and 1
@@ -54,9 +59,13 @@ def run(
         raise Exception("dataset must be specified")
 
     if dataset == "mnist":
-        judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=path, binary_rewards=binary_rewards)
+        judge = MNISTJudge(
+            N_to_mask=N_to_mask, model_dir=path, binary_rewards=binary_rewards
+        )
     elif dataset == "fashion":
-        judge = FashionJudge(N_to_mask=N_to_mask, model_dir=path, binary_rewards=binary_rewards)
+        judge = FashionJudge(
+            N_to_mask=N_to_mask, model_dir=path, binary_rewards=binary_rewards
+        )
     else:
         raise Exception("Unknown dataset in " + "dataset.txt: " + dataset)
 
@@ -72,9 +81,17 @@ def run(
     agent_truth = DebateAgent(precommit_label=label, agentStrength=rollouts)
     assert index_of_true_agent in [0, 1]
 
-    player_description = DebatePlayers(agent_truth, agent_lie, index_of_true_agent, our_name="truth", opp_name="liar")
+    player_description = DebatePlayers(
+        agent_truth, agent_lie, index_of_true_agent, our_name="truth", opp_name="liar"
+    )
 
-    debate = Debate(player_description.agents, judge, N_to_mask, sample, debug=False, changing_sides=changing_sides)
-
+    debate = Debate(
+        player_description.agents,
+        judge,
+        N_to_mask,
+        sample,
+        debug=True,
+        changing_sides=changing_sides,
+    )
     utility = debate.play()
     player_description.print_debate_result(utility, label)

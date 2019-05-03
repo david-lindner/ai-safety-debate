@@ -1,3 +1,8 @@
+"""
+Used for testing the debate classifier. Trains it on MNIST with the true labels
+and evaluates it's accuracy. Only used for testing.
+"""
+
 import numpy as np
 
 from judge import MNISTJudge

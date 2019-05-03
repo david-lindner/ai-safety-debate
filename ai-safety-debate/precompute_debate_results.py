@@ -1,3 +1,10 @@
+"""
+Calculates results of non-precommited debates for all MNIST evaluation images
+and stores writes them as a serialized numpy array to a file. Provides the
+option to paralellize this process using `multiprocessing`. Currently only
+works for MNIST.
+"""
+
 import argparse
 import functools
 import math
@@ -11,6 +18,8 @@ from agent import DebateAgent
 
 
 def get_debate_results(start_point, batch_size, N_train, N_to_mask, judge_path):
+    # MNISTJudge has to be imported here, because otherwise tensorflow does not
+    # work together with multiprocessing
     from judge import MNISTJudge
 
     judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=judge_path, binary_rewards=False)
@@ -19,7 +28,7 @@ def get_debate_results(start_point, batch_size, N_train, N_to_mask, judge_path):
     result_list = []
     for i in range(batch_size):
         print("i", start_point + i, flush=True)
-        if start_point + i > N_train:
+        if start_point + i > N_train:  # end of dataset
             break
         results_per_label = np.zeros([10, 10])
         for label in range(10):
@@ -43,23 +52,29 @@ if __name__ == "__main__":
     parser.add_argument("--rollouts", type=int, help="Number of rollouts for MCTS")
     parser.add_argument("--outfile", type=str, help="Path to save the results to")
     parser.add_argument("--N-threads", type=int, help="Number of threads")
+    parser.add_argument(
+        "--N-train",
+        type=int,
+        help="Number of training labels to precompute debate results for."
+        "Can be used to test this for a small set of images.",
+        default=60000,
+    )
 
     args = parser.parse_args()
 
-    N_train = 40
-    results = np.zeros((N_train, 10))
-
-    batch_size = math.ceil(N_train / args.N_threads)
+    results = np.zeros((args.N_train, 10))
+    batch_size = math.ceil(args.N_train / args.N_threads)
     start_points = [i * batch_size for i in range(args.N_threads)]
 
     get_debate_results_partial = functools.partial(
         get_debate_results,
         batch_size=batch_size,
-        N_train=N_train,
+        N_train=args.N_train,
         N_to_mask=args.N_to_mask,
         judge_path=args.judge_path,
     )
 
+    # this should give the same result as the code below, not using multiprocessing
     # debate_results = []
     # for sp in start_points:
     #     debate_results.append(get_debate_results_partial(sp))

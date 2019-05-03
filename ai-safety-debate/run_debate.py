@@ -20,7 +20,7 @@ def cfg():
     dataset = "mnist"
     rollouts = 10
     index_of_truth_agent = 0
-    simultaneous = False
+    changing_sides = True
 
 
 @ex.automain
@@ -32,7 +32,7 @@ def run(
     dataset,
     rollouts,
     index_of_truth_agent,
-    simultaneous
+    changing_sides
 ):
     if judge_path:
         path = judge_path
@@ -58,9 +58,9 @@ def run(
     agent_truth = DebateAgent(precommit_label=label, agentStrength=rollouts)
 
     if index_of_truth_agent == 0:
-        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample, debug=False, simultaneous=simultaneous)
+        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample, debug=False, changing_sides=changing_sides)
     else:
-        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample, debug=False, simultaneous=simultaneous)
+        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample, debug=False, changing_sides=changing_sides)
 
     utility = debate.play()
     if utility == 1:

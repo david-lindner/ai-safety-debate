@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 
 
 class Debate:
-    def __init__(self, agents, judge, N_moves, sample, debug=False, simultaneous=False, player_order=None):
+    def __init__(self, agents, judge, N_moves, sample, debug=False, changing_sides=True, player_order=None):
         assert len(agents) == 2
         self.agents = agents
         self.judge = judge
@@ -21,7 +21,7 @@ class Debate:
         
         # player order is an array determinating which player should play each round
         if player_order == None:
-            if simultaneous:
+            if not changing_sides:
                 if N_moves%2 != 0:
                     raise Exception("The number of rounds in simultaneous debate should be even")
                 player_order = [0 for i in range(N_moves//2)] + [1 for i in range(N_moves//2)]

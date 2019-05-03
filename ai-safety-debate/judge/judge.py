@@ -11,9 +11,7 @@ class Judge:
         config = tf.estimator.RunConfig(keep_checkpoint_max=1)
         # Create the Estimator
         self.estimator = tf.estimator.Estimator(
-            model_fn=self.model_fn, 
-            model_dir=model_dir,
-            config = config
+            model_fn=self.model_fn, model_dir=model_dir, config=config
         )
 
         # Subclasses need to implement a model_fn with a "softmax_tensor"
@@ -111,16 +109,29 @@ class Judge:
         prediction = self.predictor({"masked_x": input})
         probs = prediction["probabilities"][0]
         # print("probs", probs)
+        # -1 when both agents precommit, 0 when 0 doesn't, 1 when 1 doesn't
+        if initial_statements == [None, None]:
+            raise Exception("At least one agent has to make a claim!")
+        elif initial_statements[0] == None:
+            unrestricted_debate = 0
+        elif initial_statements[1] == None:
+            unrestricted_debate = 1
+        else:
+            unrestricted_debate = -1
 
-        # None corresponds to no precommitment.
-        # An unrestricted ( = non-precommited) player gets the probability of the best non-taken label
+        if unrestricted_debate == -1:
+            utility = probs[initial_statements[0]] - probs[initial_statements[1]]
+        # the unrestricted ( = non-precommited) player gets the probability of the best non-taken label
         # this is weird and unintuitive, you should instead either run all 9 debates and pick the best one,
         # or give the unrestricted player the sum of the non-taken labels. The latter is too hard for the pre-commited
         # player, the former takes too long. So we do this weird thing as a cheaper approximation of the former.
         # But beware: it is weird!
-        if initial_statements == [None, None]:
-            raise Exception("At least one agent has to make a claim!")
-        elif initial_statements[0] == None:
+        elif unrestricted_debate == 1:
+            first_pl_prob = probs[initial_statements[0]]
+            probs[initial_statements[0]] = 0
+            second_pl_prob = max(probs)
+            utility = first_pl_prob - second_pl_prob
+        elif unrestricted_debate == 0:
             second_pl_prob = probs[initial_statements[1]]
             probs[initial_statements[1]] = 0
             utility = max(probs) - second_pl_prob
@@ -129,7 +140,7 @@ class Judge:
             probs[initial_statements[0]] = 0
             utility = first_pl_prob - max(probs)
         else:
-            utility = probs[initial_statements[0]] - probs[initial_statements[1]]
+            raise Exception("You should not ever get here!")
 
         # convert to binary rewards, breaking ties in favor of player 1 (because whatever)
         if self.binary_rewards:

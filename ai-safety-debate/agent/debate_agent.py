@@ -1,17 +1,13 @@
 from .mcts import mcts
 
 
-class Agent:
+class DebateAgent:
     def __init__(self, precommit_label=None, agentStrength=1000):
         self.precommit_label = precommit_label
         self.mcts = mcts(iterationLimit=agentStrength)
 
     def get_initial_statement(self):
-        if self.precommit_label is not None:
-            return self.precommit_label
-        else:
-            # raise NotImplementedError()
-            return None
+        return self.precommit_label
 
     def select_move(self, debate):
         """

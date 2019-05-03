@@ -110,3 +110,5 @@ venv.bak/
 experiments/
 amplification_experiments/
 saved_models/
+.idea/
+

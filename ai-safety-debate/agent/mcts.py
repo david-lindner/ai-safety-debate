@@ -1,3 +1,4 @@
+# code obtained from https://pypi.org/project/mcts/ (and modified slightly)
 import time
 import math
 import random
@@ -70,6 +71,12 @@ class mcts:
         self.backpropogate(node, reward)
 
     def select(self, node):
+        """
+        Iteratively finds the best child, then the best child of that child, and so on, until encountering a terminal
+        node or a node that hasn't yet been fully expanded.
+        :param node: a node in the MCTS tree, from which we start exploring
+        :return: a tree node
+        """
         while not node.isTerminal:
             if node.isFullyExpanded:
                 node = self.getBestChild(node, self.explorationConstant)
@@ -78,6 +85,10 @@ class mcts:
         return node
 
     def expand(self, node):
+        """
+        Takes a node where not all actions have been explored yet.
+        Takes one of the unexplored actions, and returns the resulting node.
+        """
         actions = node.state.getPossibleActions()
         for action in actions:
             if action not in node.children.keys():
@@ -90,12 +101,25 @@ class mcts:
         raise Exception("Should never reach here")
 
     def backpropogate(self, node, reward):
+        """
+        For a terminal node "node" which produced reward "reward", updates all of the nodes above (increasing visit
+        count and updating the cumulative reward.
+        :param node: terminal node
+        :param reward: reward obtained at this node
+        :return: doesn't return anything, of course! :-)
+        """
         while node is not None:
             node.numVisits += 1
             node.totalReward += reward
             node = node.parent
 
     def getBestChild(self, node, explorationValue):
+        """
+        Runs the Upper Confidence Bounds algorithm (selection algorithm for stochastic multi-armed bandit)
+        :param node: where to select the action
+        :param explorationValue: parameter controlling the exploration-exploitation trade-off
+        :return: the action with the highest value + "potential"
+        """
         bestValue = float("-inf")
         bestNodes = []
         for child in node.children.values():
@@ -112,6 +136,13 @@ class mcts:
         return random.choice(bestNodes)
 
     def getAction(self, root, bestChild):
+        """
+        Actions and nodes are of a different type.
+        This takes a node and returns the action that leads to that node -- i.e. it serves as a kind of translation.
+        :param root: parent node
+        :param bestChild: children node
+        :return: action that, when taken at the parent, leads to the child
+        """
         for action, node in root.children.items():
             if node is bestChild:
                 return action

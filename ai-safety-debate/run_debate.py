@@ -69,6 +69,8 @@ def run(
 
     agent_lie = DebateAgent(precommit_label=lying_agent_label, agentStrength=rollouts)
     agent_truth = DebateAgent(precommit_label=label, agentStrength=rollouts)
+    assert index_of_our_agent in [0, 1]
+    player_description = DebatePlayers(agent_truth, agent_lie, index_of_our_agent, our_name="truth", opp_name="liar")
 
     player_description = DebatePlayers(
         agent_truth, agent_lie, index_of_our_agent, our_name="truth", opp_name="liar"

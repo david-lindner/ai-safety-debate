@@ -18,8 +18,9 @@ def cfg():
     lying_agent_label = 2
     judge_path = None
     dataset = "mnist"
-    rollouts = 1000
-    truth_agent = 0
+    rollouts = 10
+    index_of_truth_agent = 0
+    simultaneous = False
 
 
 @ex.automain
@@ -30,7 +31,8 @@ def run(
     judge_path,
     dataset,
     rollouts,
-    index_of_truth_agent=0,
+    index_of_truth_agent,
+    simultaneous
 ):
     if judge_path:
         path = judge_path
@@ -56,16 +58,22 @@ def run(
     agent_truth = DebateAgent(precommit_label=label, agentStrength=rollouts)
 
     if index_of_truth_agent == 0:
-        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample, debug=False)
+        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample, debug=False, simultaneous=simultaneous)
     else:
-        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample, debug=False)
+        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample, debug=False, simultaneous=simultaneous)
 
     utility = debate.play()
     if utility == 1:
-        print("Winner: liar")
+        if index_of_truth_agent == 0:
+            print("Winner: truth")
+        else:
+            print("Winner: liar")
     elif utility == 0:
         print("Draw")
     elif utility == -1:
-        print("Winner: truth")
+        if index_of_truth_agent == 0:
+            print("Winner: liar")
+        else:
+            print("Winner: truth")
     else:
         print("Utility of the honest agent: ", utility * (-1), " (1=win, -1 = loss)")

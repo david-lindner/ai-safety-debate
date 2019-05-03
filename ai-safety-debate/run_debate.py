@@ -1,3 +1,8 @@
+"""
+Run an individual debate and plots an image and returns the results.
+"""
+
+
 import numpy as np
 
 from sacred import Experiment
@@ -7,7 +12,7 @@ from judge import MNISTJudge, FashionJudge
 from debate import Debate
 from agent import DebateAgent, DebatePlayers
 
-ex = Experiment("mnist_debate")
+ex = Experiment("run_debate")
 ex.observers.append(FileStorageObserver.create("experiments"))
 
 
@@ -15,7 +20,7 @@ ex.observers.append(FileStorageObserver.create("experiments"))
 def cfg():
     N_to_mask = 4
     sample_id = np.random.randint(100)
-    lying_agent_label = 2
+    lying_agent_label = None
     judge_path = None
     dataset = "mnist"
     rollouts = 1000
@@ -34,8 +39,10 @@ def run(
     rollouts,
     index_of_our_agent,
     binary_rewards,
-    changing_sides
+    changing_sides,
 ):
+    assert index_of_our_agent in [0, 1]
+
     if judge_path:
         path = judge_path
     elif dataset:
@@ -44,9 +51,13 @@ def run(
         raise Exception("dataset must be specified")
 
     if dataset == "mnist":
-        judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=path, binary_rewards=binary_rewards)
+        judge = MNISTJudge(
+            N_to_mask=N_to_mask, model_dir=path, binary_rewards=binary_rewards
+        )
     elif dataset == "fashion":
-        judge = FashionJudge(N_to_mask=N_to_mask, model_dir=path, binary_rewards=binary_rewards)
+        judge = FashionJudge(
+            N_to_mask=N_to_mask, model_dir=path, binary_rewards=binary_rewards
+        )
     else:
         raise Exception("Unknown dataset in " + "dataset.txt: " + dataset)
 
@@ -58,9 +69,18 @@ def run(
 
     agent_lie = DebateAgent(precommit_label=lying_agent_label, agentStrength=rollouts)
     agent_truth = DebateAgent(precommit_label=label, agentStrength=rollouts)
-    assert index_of_our_agent in [0, 1]
-    player_description = DebatePlayers(agent_truth, agent_lie, index_of_our_agent, our_name="truth", opp_name="liar")
 
-    debate = Debate(player_description.agents, judge, N_to_mask, sample, debug=False, changing_sides=changing_sides)
+    player_description = DebatePlayers(
+        agent_truth, agent_lie, index_of_our_agent, our_name="truth", opp_name="liar"
+    )
+
+    debate = Debate(
+        player_description.agents,
+        judge,
+        N_to_mask,
+        sample,
+        debug=True,
+        changing_sides=changing_sides,
+    )
     utility = debate.play()
     player_description.print_debate_result(utility, label)

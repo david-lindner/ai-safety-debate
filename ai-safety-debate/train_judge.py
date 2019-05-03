@@ -1,3 +1,8 @@
+"""
+Trains and saves a judge to be used for any of the other scripts.
+Pretrained judges can be founed in our Google Drive folder.
+"""
+
 from judge import MNISTJudge, FashionJudge
 import argparse
 

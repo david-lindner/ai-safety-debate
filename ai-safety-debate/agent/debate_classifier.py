@@ -2,6 +2,11 @@ import tensorflow as tf
 
 
 class DebateClassifier:
+    """
+    MNIST classifier based on
+    https://www.tensorflow.org/tutorials/estimators/cnn#building_the_cnn_mnist_classifier
+    """
+
     def __init__(self, sample_shape=[28, 28], model_dir=None, log_dir=None):
         self.sample_shape = sample_shape
         self.estimator = tf.estimator.Estimator(
@@ -9,7 +14,18 @@ class DebateClassifier:
         )
 
     def train(self, np_batch, labels, loss_weights):
+        """
+        Train for one batch of data.
+
+        Args:
+        np_batch: numpy array of training batch (first dimension is batch size)
+        labels: numpy array of training labels (length should be batch size)
+        loss_weights: numpy array of weights to multiply the loss function of
+                      the individual samples in the batch with
+        """
         batch_size = np_batch.shape[0]
+        assert len(labels) == batch_size
+        assert len(loss_weights) == batch_size
         # Train for one batch
         train_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": np_batch, "loss_weights": loss_weights},
@@ -28,11 +44,14 @@ class DebateClassifier:
         return eval_results
 
     def predict(self, sample):
+        """
+        Get class probabilities for an individual sample.
+        """
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": sample}, y=None, num_epochs=1, shuffle=False
         )
-        eval_results = self.estimator.predict(input_fn=eval_input_fn)
-        return eval_results
+        result = self.estimator.predict(input_fn=eval_input_fn)
+        return result
 
     def model_fn(self, features, labels, mode):
         # Input Layer

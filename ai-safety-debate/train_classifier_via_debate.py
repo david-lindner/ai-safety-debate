@@ -1,3 +1,9 @@
+"""
+Train a MNIST classifier from a sparse judge combined with a debate.
+
+"""
+
+
 import numpy as np
 
 from sacred import Experiment
@@ -60,7 +66,7 @@ def run(
 
     for epoch in range(N_epochs):
         for i in range(N_train):
-            print(i)
+            print(i, flush=True)
             sample = train_data[i]
             probs = next(debate_classifier.predict(sample))["probabilities"]
             label = np.random.choice(range(len(probs)), p=probs)
@@ -71,20 +77,23 @@ def run(
             # print("i", i, "label2", label2)
 
             if cheat_debate:
-                winner = -1 if label == judge.train_labels[i] else 0
+                # simulate a perfectly accurate debate
+                utility = -1 if label == judge.train_labels[i] else 0
             else:
+                # run non-precommited debate
                 agent1 = DebateAgent(precommit_label=None, agentStrength=rollouts)
                 agent2 = DebateAgent(precommit_label=label, agentStrength=rollouts)
                 debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
-                winner = debate.play()
+                utility = debate.play()
 
-            weight = 1 if winner == -1 else -1
+            weight = 1 if utility == -1 else -1
             # print("weight", weight)
             batch_samples.append(sample)
             batch_labels.append(label)
             batch_weights.append(weight)
 
             if (i + 1) % batch_size == 0 or i == N_train - 1:
+                # update debate classifier
                 print("i", i, flush=True)
                 print("batch_weights", batch_weights, flush=True)
                 debate_classifier.train(
@@ -93,7 +102,7 @@ def run(
                     np.array(batch_weights),
                 )
                 acc = debate_classifier.evaluate_accuracy(eval_data, eval_labels)
-                print("Updated model", flush=True)
+                print("Updated debate_classifier", flush=True)
                 print("Evaluation accuracy", acc, flush=True)
                 batch_samples = []
                 batch_labels = []

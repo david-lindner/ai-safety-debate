@@ -29,7 +29,7 @@ class Debate:
         self.debug = debug
 
         # player order is an array determinating which player should play each round
-        if player_order == None:
+        if player_order is None:
             if not changing_sides:
                 if N_moves % 2 != 0:
                     raise Exception(

@@ -71,7 +71,7 @@ def run(
             # print("i", i, "label2", label2)
 
             if cheat_debate:
-                winner = 1 if label == judge.train_labels[i] else 0
+                winner = -1 if label == judge.train_labels[i] else 0
             else:
                 agent1 = DebateAgent(precommit_label=None, agentStrength=rollouts)
                 agent2 = DebateAgent(precommit_label=label, agentStrength=rollouts)

@@ -21,6 +21,7 @@ def cfg():
     rollouts = 1000
     index_of_our_agent = 1
     binary_rewards = False
+    changing_sides = False
 
 
 @ex.automain
@@ -32,7 +33,8 @@ def run(
     dataset,
     rollouts,
     index_of_our_agent,
-    binary_rewards
+    binary_rewards,
+    changing_sides
 ):
     if judge_path:
         path = judge_path
@@ -59,6 +61,6 @@ def run(
     assert index_of_our_agent in [0, 1]
     player_description = DebatePlayers(agent_truth, agent_lie, index_of_our_agent, our_name="truth", opp_name="liar")
 
-    debate = Debate(player_description.agents, judge, N_to_mask, sample, debug=False)
+    debate = Debate(player_description.agents, judge, N_to_mask, sample, debug=False, changing_sides=changing_sides)
     utility = debate.play()
     player_description.print_debate_result(utility, label)

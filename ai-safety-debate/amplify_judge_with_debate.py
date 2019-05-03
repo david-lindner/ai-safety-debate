@@ -6,10 +6,10 @@ from random import randint
 
 from judge import MNISTJudge, FashionJudge
 from debate import Debate
-from agent import Agent
+from agent import DebateAgent
 
 ex = Experiment("mnist_debate_eval")
-ex.observers.append(FileStorageObserver.create("experiments"))
+ex.observers.append(FileStorageObserver.create("amplification_experiments"))
 
 
 @ex.config
@@ -23,8 +23,17 @@ def cfg():
     paper_eval = False
     index_of_truth_agent = 0
 
+
 @ex.automain
-def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, index_of_truth_agent=0):
+def run(
+    N_to_mask,
+    judge_path,
+    dataset,
+    nmbr_samples,
+    paper_eval,
+    rollouts,
+    index_of_truth_agent=0,
+):
     # parse parameters
     if judge_path:
         path = judge_path
@@ -58,20 +67,38 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, inde
                 print(lying_agent_label, end="-", flush=True)
                 liar_win_count = 0
                 for game_number in range(3):
-                    agent_lie = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
-                    agent_truth = Agent(precommit_label=label, agentStrength=rollouts)
+                    agent_lie = DebateAgent(
+                        precommit_label=lying_agent_label, agentStrength=rollouts
+                    )
+                    agent_truth = DebateAgent(
+                        precommit_label=label, agentStrength=rollouts
+                    )
                     # TODO this will do weird stuff if the utilities are non-binary. Works if they are either 1 or -1.
                     if index_of_truth_agent == 0:
-                        debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample, debug=False)
+                        debate = Debate(
+                            (agent_truth, agent_lie),
+                            judge,
+                            N_to_mask,
+                            sample,
+                            debug=False,
+                        )
                         this_game_utility = debate.play()
                         if this_game_utility == -1:
                             liar_win_count += 1
                     else:
-                        debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample, debug=False)
+                        debate = Debate(
+                            (agent_lie, agent_truth),
+                            judge,
+                            N_to_mask,
+                            sample,
+                            debug=False,
+                        )
                         this_game_utility = debate.play()
                         if this_game_utility == 1:
                             liar_win_count += 1
-                    if liar_win_count == 2 or (liar_win_count == 0 and game_number == 1):
+                    if liar_win_count == 2 or (
+                        liar_win_count == 0 and game_number == 1
+                    ):
                         break
                 if liar_win_count >= 2:
                     truth_won = False
@@ -84,16 +111,22 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, inde
                 lying_agent_label = randint(0, 9)
             lying_agent_label = None
 
-            agent_lie = Agent(precommit_label=lying_agent_label, agentStrength=rollouts)
-            agent_truth = Agent(precommit_label=label, agentStrength=rollouts)
+            agent_lie = DebateAgent(
+                precommit_label=lying_agent_label, agentStrength=rollouts
+            )
+            agent_truth = DebateAgent(precommit_label=label, agentStrength=rollouts)
 
             if index_of_truth_agent == 0:
-                debate = Debate((agent_truth, agent_lie), judge, N_to_mask, sample, debug=False)
+                debate = Debate(
+                    (agent_truth, agent_lie), judge, N_to_mask, sample, debug=False
+                )
                 this_game_utility = debate.play()
                 if this_game_utility == -1:
                     truth_won = False
             else:
-                debate = Debate((agent_lie, agent_truth), judge, N_to_mask, sample, debug=False)
+                debate = Debate(
+                    (agent_lie, agent_truth), judge, N_to_mask, sample, debug=False
+                )
                 this_game_utility = debate.play()
                 if this_game_utility == 1:
                     truth_won = False
@@ -105,13 +138,15 @@ def run(N_to_mask, judge_path, dataset, nmbr_samples, paper_eval, rollouts, inde
         print(
             "Truth winrate: {} out of {} ({}%)".format(
                 overall_truth_win_count,
-                sample_id+1,
-                100 * overall_truth_win_count / (sample_id+1),
+                sample_id + 1,
+                100 * overall_truth_win_count / (sample_id + 1),
             )
         )
 
     print(
         "Overall truth winrate: {} out of {} ({}%)".format(
-            overall_truth_win_count, nmbr_samples, 100 * overall_truth_win_count / nmbr_samples
+            overall_truth_win_count,
+            nmbr_samples,
+            100 * overall_truth_win_count / nmbr_samples,
         )
     )

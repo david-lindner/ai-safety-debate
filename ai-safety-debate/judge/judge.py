@@ -11,9 +11,7 @@ class Judge:
         config = tf.estimator.RunConfig(keep_checkpoint_max=1)
         # Create the Estimator
         self.estimator = tf.estimator.Estimator(
-            model_fn=self.model_fn, 
-            model_dir=model_dir,
-            config = config
+            model_fn=self.model_fn, model_dir=model_dir, config=config
         )
 
         # Subclasses need to implement a model_fn with a "softmax_tensor"
@@ -119,28 +117,27 @@ class Judge:
         elif initial_statements[1] == None:
             unrestricted_debate = 1
         else:
-            unrestricted_debate=-1
+            unrestricted_debate = -1
 
-        if unrestricted_debate==-1:
+        if unrestricted_debate == -1:
             utility = probs[initial_statements[0]] - probs[initial_statements[1]]
         # the unrestricted ( = non-precommited) player gets the probability of the best non-taken label
         # this is weird and unintuitive, you should instead either run all 9 debates and pick the best one,
         # or give the unrestricted player the sum of the non-taken labels. The latter is too hard for the pre-commited
         # player, the former takes too long. So we do this weird thing as a cheaper approximation of the former.
         # But beware: it is weird!
-        elif unrestricted_debate==1:
+        elif unrestricted_debate == 1:
             first_pl_prob = probs[initial_statements[0]]
             probs[initial_statements[0]] = 0
             second_pl_prob = max(probs)
             utility = first_pl_prob - second_pl_prob
-        elif unrestricted_debate==0:
+        elif unrestricted_debate == 0:
             second_pl_prob = probs[initial_statements[1]]
             probs[initial_statements[1]] = 0
             first_pl_prob = max(probs)
             utility = first_pl_prob - second_pl_prob
         else:
             raise Exception("You should not ever get here!")
-
 
         # convert to binary rewards, breaking ties in favor of player 1 (because whatever)
         if self.binary_rewards:

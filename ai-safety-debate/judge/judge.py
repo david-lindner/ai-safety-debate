@@ -134,11 +134,8 @@ class Judge:
         elif unrestricted_debate == 0:
             second_pl_prob = probs[initial_statements[1]]
             probs[initial_statements[1]] = 0
-            utility = max(probs) - second_pl_prob
-        elif initial_statements[1] == None:
-            first_pl_prob = probs[initial_statements[0]]
-            probs[initial_statements[0]] = 0
-            utility = first_pl_prob - max(probs)
+            first_pl_prob = max(probs)
+            utility = first_pl_prob - second_pl_prob
         else:
             raise Exception("You should not ever get here!")
 

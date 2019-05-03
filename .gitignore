@@ -108,3 +108,5 @@ venv.bak/
 
 experiments/
 saved_models/
+.idea/
+

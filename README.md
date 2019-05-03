@@ -27,11 +27,7 @@ We use `sacred` for tracking experiments. The results are typically stored in th
 
 ## Reproducing 'AI Safety via Debate'
 
-To reproduce the results in table 2 of the [original AI Safety via Debate paper](https://arxiv.org/abs/1805.00899), run
-
-```
-TODO
-```
+The commands for reproducing the results in table 2 of the [original AI Safety via Debate paper](https://arxiv.org/abs/1805.00899) can be found in `external_compute/amplify.sh`.
 
 
 ## Testing

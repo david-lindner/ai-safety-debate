@@ -9,7 +9,7 @@ from debate import Debate
 from agent import DebateAgent
 
 ex = Experiment("mnist_debate_eval")
-ex.observers.append(FileStorageObserver.create("experiments"))
+ex.observers.append(FileStorageObserver.create("amplification_experiments"))
 
 
 @ex.config

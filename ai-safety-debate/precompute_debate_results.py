@@ -13,7 +13,7 @@ from agent import DebateAgent
 def get_debate_results(start_point, batch_size, N_train, N_to_mask, judge_path):
     from judge import MNISTJudge
 
-    judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=judge_path)
+    judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=judge_path, binary_rewards=False)
     train_data = judge.train_data
 
     result_list = []
@@ -21,15 +21,15 @@ def get_debate_results(start_point, batch_size, N_train, N_to_mask, judge_path):
         print("i", start_point + i, flush=True)
         if start_point + i > N_train:
             break
-        results_per_label = np.zeros(10)
+        results_per_label = np.zeros( [10, 10] )
         for label in range(10):
             # print("label", label)
             sample = train_data[start_point + i]
             agent1 = DebateAgent(precommit_label=None, agentStrength=args.rollouts)
             agent2 = DebateAgent(precommit_label=label, agentStrength=args.rollouts)
             debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
-            winner = debate.play()
-            results_per_label[label] = winner
+            probabilities = debate.play(full_report=True)
+            results_per_label[label] = probabilities
         result_list.append(results_per_label)
     return result_list
 

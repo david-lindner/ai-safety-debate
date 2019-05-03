@@ -59,14 +59,20 @@ class Debate:
             self.sample, self.initial_statements, self.judge, self.N_moves, 0
         )
 
-    def play(self):
+    def play(self, full_report=False):
         while not self.currentState.isTerminal():
             action = self.agents[self.currentState.currentPlayer].select_move(self)
             self.currentState = self.currentState.takeAction(action)
             if self.debug and visualization_available:
                 plot_image_mask(self.currentState)
-        utility = self.judge.evaluate_debate(
-            np.stack([self.currentState.mask.sum(axis=0), self.sample], axis=1),
-            self.initial_statements,
-        )
-        return utility
+        if full_report:
+            probabilities = self.judge.evaluate_debate(
+                np.stack([self.currentState.mask.sum(axis=0), self.sample], axis=1)
+            )
+            return probabilities
+        else:
+            utility = self.judge.evaluate_debate(
+                np.stack([self.currentState.mask.sum(axis=0), self.sample], axis=1),
+                self.initial_statements,
+            )
+            return utility

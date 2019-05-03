@@ -147,3 +147,8 @@ class Judge:
                 utility = -1
 
         return utility
+
+    def full_report(self, input):
+        prediction = self.predictor({"masked_x": input})
+        probabilities = prediction["probabilities"][0]
+        return probabilities

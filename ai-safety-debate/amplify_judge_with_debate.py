@@ -18,6 +18,7 @@ def cfg():
     rollouts = 100
     eval_unrestricted = False
     index_of_truth_agent = 0
+    changing_sides = True
 
 
 @ex.automain
@@ -29,6 +30,7 @@ def run(
     eval_unrestricted,
     rollouts,
     index_of_truth_agent,
+    changing_sides,
 ):
     # parse parameters
     if judge_path:
@@ -77,6 +79,7 @@ def run(
                             N_to_mask,
                             sample,
                             debug=False,
+                            changing_sides=changing_sides,
                         )
                         this_game_utility = debate.play()
                         if this_game_utility == -1:  # second agent won (lying)
@@ -88,6 +91,7 @@ def run(
                             N_to_mask,
                             sample,
                             debug=False,
+                            changing_sides=changing_sides,
                         )
                         this_game_utility = debate.play()
                         if this_game_utility == 1:  # first agent won
@@ -107,14 +111,14 @@ def run(
 
             if index_of_truth_agent == 0:
                 debate = Debate(
-                    (agent_truth, agent_lie), judge, N_to_mask, sample, debug=False
+                    (agent_truth, agent_lie), judge, N_to_mask, sample, debug=False, changing_sides=changing_sides,
                 )
                 this_game_utility = debate.play()
                 if this_game_utility == -1:
                     truth_won = False
             else:
                 debate = Debate(
-                    (agent_lie, agent_truth), judge, N_to_mask, sample, debug=False
+                    (agent_lie, agent_truth), judge, N_to_mask, sample, debug=False, changing_sides=changing_sides,
                 )
                 this_game_utility = debate.play()
                 if this_game_utility == 1:

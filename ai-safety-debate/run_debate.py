@@ -42,9 +42,9 @@ def run(
     changing_sides,
 ):
     """
-    Runs one debate game on a given sample from a specified dataset (either "mnist" or "fashion") with N_to_mask rounds. 
+    Runs one debate game on a given sample from a specified dataset (either "mnist" or "fashion") with N_to_mask rounds.
     The debate is modeled by MCTS with given number of rollouts.
-    One player is the honest agents arguing for the correct label, the other either precommits to a lying_agent_label or debates without precommit if lying_agent_label is set to None. 
+    One player is the honest agents arguing for the correct label, the other either precommits to a lying_agent_label or debates without precommit if lying_agent_label is set to None.
 
     index_of_true_agent: Either 0 or 1 whether the honest agent plays first or second.
     binary_rewards: If set to True, rewards are either 1 or -1, if set False rewards lie between -1 and 1
@@ -82,7 +82,7 @@ def run(
     assert index_of_true_agent in [0, 1]
 
     player_description = DebatePlayers(
-        agent_truth, agent_lie, index_of_our_agent, our_name="truth", opp_name="liar"
+        agent_truth, agent_lie, index_of_true_agent, our_name="truth", opp_name="liar"
     )
 
     debate = Debate(

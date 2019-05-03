@@ -6,13 +6,14 @@ class DebateState:
     """
     Keeps track of the "ground truth", the claims have made so far, the judge (for evaluation of the final result).
     """
+
     def __init__(
         self,
         sample,
         initial_statements,
         judge,
-        player_order,   # a vector of player labels -- who acts in which turn
-        moves_left=6,   # debate has to tell the state how many moves can we make
+        player_order,  # a vector of player labels -- who acts in which turn
+        moves_left=6,  # debate has to tell the state how many moves can we make
     ):
 
         self.sample = sample
@@ -49,7 +50,8 @@ class DebateState:
                 and newState.player_order[moves_past] != 1
             ):
                 raise Exception("Player order elements can be only either 0 or 1 ")
-            newState.currentPlayer = newState.player_order[moves_past]
+
+            newState.current_player = newState.player_order[moves_past]
         return newState
 
     def maximizerNode(self):

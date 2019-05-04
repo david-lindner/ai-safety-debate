@@ -20,10 +20,14 @@ All code is located in the `ai-safety-debate` folder.
 
 - To train a judge use `train_judge.py`
 - To run individual debates use `run_debate.py`
-- To evaluate the accuracy of a judge combined with debate use `amlify_judge_with_debate.py`
+- To evaluate the accuracy of a judge combined with debate use `amplify_judge_with_debate.py`
 - To use debate to train a classifier use `train_classifier_via_debate.py`
 
-We use `sacred` for tracking experiments. The results are typically stored in the `experiments` and `amplification_experiments` folders.
+We use `sacred` for tracking experiments. The results are typically stored in the `experiments` and `amplification_experiments` folders. Scripts that use `sacred` have parameters specified in a config function. To specify values for these parameters, use the `with` statement, e.g.
+
+```
+python ai-safety-debate/run_debate.py with judge_path=ai-safety-debate/saved_models/mnist4
+```
 
 ## Reproducing 'AI Safety via Debate'
 

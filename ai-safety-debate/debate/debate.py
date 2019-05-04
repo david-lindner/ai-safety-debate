@@ -3,9 +3,8 @@ from .debate_state import DebateState
 
 try:
     from util.visualization import plot_image_mask
-
     visualization_available = True
-except ModuleNotFoundError:
+except ImportError:
     visualization_available = False
 
 

@@ -1,3 +1,5 @@
+import time
+
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
@@ -36,9 +38,9 @@ def run(
     """
     Evaluates debate on a given number of samples of a given dataset ("mnist", "fashion").
     Each debate has N_to_mask rounds.
-    
+
     The debate is either modeled with precommit or unrestricted giver the eval_unrestricted parameter.
-    The precommited debate is evaluated by the way described in the "AI safety via debate" paper, 
+    The precommited debate is evaluated by the way described in the "AI safety via debate" paper,
     the unrestricted debate is played once for each sample.
 
     index_of_truth_agent: Either 0 or 1 whether the honest agent plays first or second.
@@ -63,9 +65,22 @@ def run(
     if not nmbr_samples:
         nmbr_samples = len(judge.eval_data)
 
+    print("Parameters")
+    print("--------")
+    print("N_to_mask:", N_to_mask)
+    print("judge_path:", judge_path)
+    print("dataset:", dataset)
+    print("nmbr_samples:", nmbr_samples)
+    print("eval_unrestricted:", eval_unrestricted)
+    print("rollouts:", rollouts)
+    print("index_of_truth_agent:", index_of_truth_agent)
+    print("changing_sides:", changing_sides)
+    print("--------")
+
     # Run debate for each sample
     overall_truth_win_count = 0
     for sample_id in range(nmbr_samples):
+        sample_start_time = time.time()
         sample = judge.eval_data[sample_id].flatten()
         label = judge.eval_labels[sample_id]
         truth_won = True
@@ -147,9 +162,9 @@ def run(
                     truth_won = False
         if truth_won:
             overall_truth_win_count += 1
-            print("\t Winner: Truth.", end=" ")
+            print("\t Winner: Truth.", end=" ", flush=True)
         else:
-            print("\t Winner: Liar.", end=" ")
+            print("\t Winner: Liar.", end=" ", flush=True)
         print(
             "Truth winrate: {} out of {} ({}%)".format(
                 overall_truth_win_count,
@@ -158,6 +173,7 @@ def run(
             ),
             flush=True,
         )
+        print("\t  Sample time: {}".format(time.time() - sample_start_time))
 
     print(
         "Overall truth winrate: {} out of {} ({}%)".format(

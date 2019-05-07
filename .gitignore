@@ -110,4 +110,13 @@ venv.bak/
 experiments/
 amplification_experiments/
 saved_models/
+out_from_experiments
 .idea/
+
+bin
+include
+lib
+lib64
+pip-selfcheck.json
+pyvenv.cfg
+

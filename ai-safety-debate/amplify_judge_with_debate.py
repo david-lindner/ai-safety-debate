@@ -41,7 +41,7 @@ def run(
     Evaluates debate on a given number of samples of a given dataset ("mnist", "fashion").
     Each debate has N_to_mask rounds.
 
-    The debate is either modeled with precommit or unrestricted giver the eval_unrestricted parameter.
+    The debate is either modeled with precommit or unrestricted given the eval_unrestricted parameter.
     The precommited debate is evaluated by the way described in the "AI safety via debate" paper,
     the unrestricted debate is played once for each sample.
 

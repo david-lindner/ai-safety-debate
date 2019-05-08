@@ -17,6 +17,7 @@ def cfg():
     judge_path = None
     dataset = "mnist"
     nmbr_samples = None
+    start_at_sample = 0
     eval_unrestricted = True
     rollouts = 10
     index_of_truth_agent = 0
@@ -29,6 +30,7 @@ def run(
     judge_path,
     dataset,
     nmbr_samples,
+    start_at_sample,
     eval_unrestricted,
     rollouts,
     index_of_truth_agent,
@@ -71,15 +73,19 @@ def run(
     print("judge_path:", judge_path)
     print("dataset:", dataset)
     print("nmbr_samples:", nmbr_samples)
+    print("start_at_sample:", start_at_sample)
     print("eval_unrestricted:", eval_unrestricted)
     print("rollouts:", rollouts)
     print("index_of_truth_agent:", index_of_truth_agent)
     print("changing_sides:", changing_sides)
     print("--------")
+    judge_accuracy = judge.evaluate_accuracy()
+    print("Judge accuracy:", judge_accuracy)
+    print("--------")
 
     # Run debate for each sample
     overall_truth_win_count = 0
-    for sample_id in range(nmbr_samples):
+    for sample_id in range(start_at_sample, start_at_sample + nmbr_samples):
         sample_start_time = time.time()
         sample = judge.eval_data[sample_id].flatten()
         label = judge.eval_labels[sample_id]
@@ -160,16 +166,18 @@ def run(
                 this_game_utility = debate.play()
                 if this_game_utility == 1:
                     truth_won = False
+
+        print("\t Sample {}".format(sample_id + 1), end=" ", flush=True)
         if truth_won:
             overall_truth_win_count += 1
-            print("\t Winner: Truth.", end=" ", flush=True)
+            print("Winner: Truth.", end=" ", flush=True)
         else:
-            print("\t Winner: Liar.", end=" ", flush=True)
+            print("Winner: Liar.", end=" ", flush=True)
         print(
             "Truth winrate: {} out of {} ({}%)".format(
                 overall_truth_win_count,
-                sample_id + 1,
-                100 * overall_truth_win_count / (sample_id + 1),
+                sample_id - start_at_sample + 1,
+                100 * overall_truth_win_count / (sample_id - start_at_sample + 1),
             ),
             flush=True,
         )

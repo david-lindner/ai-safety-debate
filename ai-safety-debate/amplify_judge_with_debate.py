@@ -81,7 +81,7 @@ def run(
     print("--------")
     judge_accuracy = judge.evaluate_accuracy()
     print("Judge accuracy:", judge_accuracy)
-    print("--------")
+    print("--------", flush=True)
 
     # Run debate for each sample
     overall_truth_win_count = 0

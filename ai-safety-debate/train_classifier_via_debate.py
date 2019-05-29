@@ -1,8 +1,6 @@
 """
 Train a MNIST classifier from a sparse judge combined with a debate.
-
 """
-
 
 import numpy as np
 
@@ -54,6 +52,9 @@ def run(
     else:
         raise Exception("Unknown dataset in " + "dataset.txt: " + dataset)
 
+    judge_accuracy = judge.evaluate_accuracy()
+    print("Judge accuracy:", judge_accuracy)
+
     train_data = judge.train_data
     N_train = len(judge.train_labels)
     eval_data = judge.eval_data
@@ -66,7 +67,7 @@ def run(
 
     for epoch in range(N_epochs):
         for i in range(N_train):
-            print(i, flush=True)
+            # print(i, flush=True)
             sample = train_data[i]
             probs = next(debate_classifier.predict(sample))["probabilities"]
             label = np.random.choice(range(len(probs)), p=probs)

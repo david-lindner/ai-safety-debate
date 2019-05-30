@@ -25,6 +25,7 @@ def cfg():
     batch_size = 128
     classifier_path = None
     cheat_debate = True
+    only_update_for_wins = False
 
 
 @ex.automain
@@ -37,6 +38,7 @@ def run(
     batch_size,
     classifier_path,
     cheat_debate,
+    only_update_for_wins,
 ):
     if judge_path:
         path = judge_path
@@ -87,7 +89,11 @@ def run(
                 debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
                 utility = debate.play()
 
-            weight = 1 if utility == -1 else -1
+            if only_update_for_wins:
+                weight = 1 if utility == -1 else 0
+            else:
+                weight = 1 if utility == -1 else -1
+
             # print("weight", weight)
             batch_samples.append(sample)
             batch_labels.append(label)

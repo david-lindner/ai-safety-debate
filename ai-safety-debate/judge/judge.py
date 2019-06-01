@@ -3,6 +3,7 @@ import numpy as np
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 
+
 class Judge:
     def __init__(self, N_to_mask, model_dir, binary_rewards=True):
         self.N_to_mask = N_to_mask
@@ -11,15 +12,15 @@ class Judge:
         try:
             self.estimator = tf.estimator.Estimator(
                 model_fn=self.model_fn,
-                model_dir=model_dir,    # directory to restore model from and save model to
+                model_dir=model_dir,  # directory to restore model from and save model to
                 # Only the latest checkpoint is saved, so you don't have to upload/download as much data
-                config=tf.estimator.RunConfig(keep_checkpoint_max=1)
+                config=tf.estimator.RunConfig(keep_checkpoint_max=1),
             )
         except AttributeError:
             raise Exception("Subclass needs to define a model_fn")
 
         # Create the predictor from the present model. Important when restoring a model.
-        self.update_predictor() 
+        self.update_predictor()
 
     def update_predictor(self):
         # Predictors are used to get predictions fast once the model has been trained.
@@ -114,7 +115,9 @@ class Judge:
         first players label and the second players label.
         """
         assert len(initial_statements) == 2
-        input = np.reshape(input, self.shape)  # reshapes vectors into images, if appropriate
+        input = np.reshape(
+            input, self.shape
+        )  # reshapes vectors into images, if appropriate
         prediction = self.predictor({"masked_x": input})
         probs = prediction["probabilities"][0]
         # print("probs", probs)
@@ -129,11 +132,11 @@ class Judge:
             raise Exception("At least one agent has to make a claim!")
         elif initial_statements[0] is None:
             prob_pl_1 = probs[initial_statements[1]]
-            probs[initial_statements[1]] = 0 # set to 0 to get max of the other labels
+            probs[initial_statements[1]] = 0  # set to 0 to get max of the other labels
             utility = max(probs) - prob_pl_1
         elif initial_statements[1] is None:
             prob_pl_0 = probs[initial_statements[0]]
-            probs[initial_statements[0]] = 0 # set to 0 to get max of the other labels
+            probs[initial_statements[0]] = 0  # set to 0 to get max of the other labels
             utility = prob_pl_0 - max(probs)
         else:
             utility = probs[initial_statements[0]] - probs[initial_statements[1]]

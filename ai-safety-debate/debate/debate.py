@@ -3,6 +3,7 @@ from .debate_state import DebateState
 
 try:
     from util.visualization import plot_image_mask
+
     visualization_available = True
 except ImportError:
     visualization_available = False
@@ -16,6 +17,7 @@ class Debate:
     after each action.
     Specifying player order could even make this order custom.
     """
+
     def __init__(
         self,
         agents,
@@ -59,7 +61,6 @@ class Debate:
             self.N_moves,
         )
 
-
     def play(self, full_report=False):
         """
         Runs the debate and returns its result.
@@ -79,7 +80,6 @@ class Debate:
             return probabilities
         else:
             utility = self.judge.evaluate_debate(
-                np.stack([mask, self.sample * mask], axis=1),
-                self.initial_statements,
+                np.stack([mask, self.sample * mask], axis=1), self.initial_statements
             )
             return utility

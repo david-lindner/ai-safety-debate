@@ -1,3 +1,4 @@
+import time
 import numpy as np
 from .debate_state import DebateState
 
@@ -67,6 +68,8 @@ class Debate:
         :param full_report: Turning this on makes the debate return a vector of probabilities (one for each label).
         :return: By default, this returns the utility of the first player in the debate, maximum is 1, minimum is -1.
         """
+        t = time.time()
+        self.judge.reset_timing()
         while not self.current_state.isTerminal():
             action = self.agents[self.current_state.current_player].select_move(self)
             self.current_state = self.current_state.takeAction(action)
@@ -74,12 +77,19 @@ class Debate:
                 plot_image_mask(self.current_state)
         mask = self.current_state.mask.sum(axis=0)
         if full_report:
-            probabilities = self.judge.full_report(
+            result = self.judge.full_report(
                 np.stack([mask, self.sample * mask], axis=1)
             )
-            return probabilities
         else:
-            utility = self.judge.evaluate_debate(
+            result = self.judge.evaluate_debate(
                 np.stack([mask, self.sample * mask], axis=1), self.initial_statements
             )
-            return utility
+        t = time.time() - t
+        print(
+            "total debate time: {}     time used by judge: {} ({}%)".format(
+                t,
+                self.judge.evaluate_debate_time,
+                100 * self.judge.evaluate_debate_time / t,
+            )
+        )
+        return result

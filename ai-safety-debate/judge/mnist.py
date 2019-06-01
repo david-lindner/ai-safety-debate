@@ -10,7 +10,13 @@ class MNISTJudge(Judge):
     Much of the tutorial code has been moved into the superclass in judge.py
     """
 
-    def __init__(self, N_to_mask, model_dir=None, binary_rewards=True):
+    def __init__(
+        self,
+        N_to_mask,
+        estimator_model_dir=None,
+        predictor_saved_model_dir=None,
+        binary_rewards=True,
+    ):
         self.batch_size = 128
 
         # shape used for prediction (see evaluate_debate and update_predictor in judge.py)
@@ -28,7 +34,9 @@ class MNISTJudge(Judge):
         self.eval_labels = eval_labels.astype(np.int32)
 
         # The rest of the initialization is handled by the superclass
-        super().__init__(N_to_mask, model_dir, binary_rewards)
+        super().__init__(
+            N_to_mask, estimator_model_dir, predictor_saved_model_dir, binary_rewards
+        )
 
     def model_fn(self, features, labels, mode):
         """Model function for CNN."""

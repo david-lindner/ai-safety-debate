@@ -1,3 +1,4 @@
+import time
 import tensorflow as tf
 import numpy as np
 
@@ -5,35 +6,73 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 
 
 class Judge:
-    def __init__(self, N_to_mask, model_dir, binary_rewards=True):
+    def __init__(
+        self,
+        N_to_mask,
+        estimator_model_dir=None,
+        predictor_saved_model_dir=None,
+        binary_rewards=True,
+    ):
         self.N_to_mask = N_to_mask
         self.binary_rewards = binary_rewards
-        # Create the Estimator
-        try:
-            self.estimator = tf.estimator.Estimator(
-                model_fn=self.model_fn,
-                model_dir=model_dir,  # directory to restore model from and save model to
-                # Only the latest checkpoint is saved, so you don't have to upload/download as much data
-                config=tf.estimator.RunConfig(keep_checkpoint_max=1),
-            )
-        except AttributeError:
-            raise Exception("Subclass needs to define a model_fn")
+        self.evaluate_debate_time = 0
+        self.evaluate_debate_counter = 0
 
-        # Create the predictor from the present model. Important when restoring a model.
-        self.update_predictor()
+        if estimator_model_dir is not None or predictor_saved_model_dir is None:
+            # Create the Estimator
+            try:
+                self.estimator = tf.estimator.Estimator(
+                    model_fn=self.model_fn,
+                    model_dir=estimator_model_dir,  # directory to restore model from and save model to
+                    # Only the latest checkpoint is saved, so you don't have to upload/download as much data
+                    config=tf.estimator.RunConfig(keep_checkpoint_max=1),
+                )
+            except AttributeError:
+                raise Exception("Subclass needs to define a model_fn")
+
+            # Create the predictor from the present model. Important when restoring a model.
+            self.update_predictor()
+        else:
+            print(
+                "Warning: Created judge without initializing the estimator. "
+                "The judge will not be able to train."
+            )
+            self.predictor = tf.contrib.predictor.from_saved_model(
+                predictor_saved_model_dir
+            )
+            self.estimator = None
+
+    def reset_timing(self):
+        self.evaluate_debate_time = 0
+        self.evaluate_debate_counter = 0
+
+    def _check_estimator_available(self):
+        if not self.estimator:
+            raise Exception(
+                "Estimator not available. Make sure you specify "
+                "a path to load the estimator from or you do not specify a path "
+                "to load the predictor from."
+            )
+
+    def make_serving_input_receiver_fn(self):
+        # The serving input receiver fn is witchcraft, which I don't quite understand.
+        # It's supposed to set up the data in a way that tensorflow can handle.
+        return tf.estimator.export.build_raw_serving_input_receiver_fn(
+            # The input is a dictionary that corresponds to the data we feed the predictor.
+            # Each key stores a tensor that is replaced by data when the predictor is used.
+            {
+                "masked_x": tf.placeholder(
+                    shape=[None, 28, 28, 2], dtype=tf.float32, name="masked_x"
+                )
+            }
+        )
 
     def update_predictor(self):
+        self._check_estimator_available()
         # Predictors are used to get predictions fast once the model has been trained.
         # We create it from an estimator.
         self.predictor = tf.contrib.predictor.from_estimator(
-            self.estimator,
-            # The serving input receiver fn is witchcraft, which I don't quite understand.
-            # It's supposed to set up the data in a way that tensorflow can handle.
-            tf.estimator.export.build_raw_serving_input_receiver_fn(
-                # The input is a dictionary that corresponds to the data we feed the predictor.
-                # Each key stores a tensor that is replaced by data when the predictor is used.
-                {"masked_x": tf.placeholder(shape=[None, 28, 28, 2], dtype=tf.float32)}
-            ),
+            self.estimator, self.make_serving_input_receiver_fn()
         )
 
     def mask_image_batch(self, image_batch):
@@ -60,6 +99,7 @@ class Judge:
         return tf.stack((mask, mask * batch), 2)
 
     def train(self, n_steps):
+        self._check_estimator_available()
         # Train the model
         train_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": self.train_data},
@@ -74,6 +114,8 @@ class Judge:
         self.update_predictor()
 
     def evaluate_accuracy(self):
+        if not self.estimator:
+            return self.evaluate_accuracy_using_predictor()
         # Evaluate the accuracy on all the eval_data
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": self.eval_data}, y=self.eval_labels, num_epochs=1, shuffle=False
@@ -114,6 +156,7 @@ class Judge:
         Otherwise, it returns the difference between the probability assigned to the
         first players label and the second players label.
         """
+        t = time.time()
         assert len(initial_statements) == 2
         input = np.reshape(
             input, self.shape
@@ -148,9 +191,27 @@ class Judge:
             else:
                 utility = -1
 
+        self.evaluate_debate_time += time.time() - t
+        self.evaluate_debate_counter += 1
+        if (self.evaluate_debate_counter + 1) % 100 == 0:
+            print(
+                "Avg evaluate debate time:",
+                self.evaluate_debate_time / self.evaluate_debate_counter,
+            )
+
         return utility
 
     def full_report(self, input):
+        input = np.reshape(
+            input, self.shape
+        )  # reshapes vectors into images, if appropriate
         prediction = self.predictor({"masked_x": input})
         probabilities = prediction["probabilities"][0]
         return probabilities
+
+    def export_as_saved_model(self, export_dir):
+        self._check_estimator_available()
+        self.estimator.export_savedmodel(
+            export_dir_base=export_dir,
+            serving_input_receiver_fn=self.make_serving_input_receiver_fn(),
+        )

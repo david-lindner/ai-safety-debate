@@ -16,18 +16,30 @@ if __name__ == "__main__":
     )
     parser.add_argument("--train-steps", type=int, help="Number of training steps")
     parser.add_argument(
-        "--path", type=str, help="Path to save the trained judge to (and restore from)"
+        "--estimator_model_dir",
+        type=str,
+        help="Path to save the trained judge to (and restore from)",
+    )
+    parser.add_argument(
+        "--predictor_saved_model_dir",
+        type=str,
+        help="Path to save the trained judge to (and restore from)",
     )
     args = parser.parse_args()
 
-    path = args.path or "saved_models/" + args.dataset + str(args.N_to_mask)
+    # path = args.path or "saved_models/" + args.dataset + str(args.N_to_mask)
 
     if args.dataset == "mnist":
-        judge = MNISTJudge(N_to_mask=args.N_to_mask, model_dir=path)
+        judge = MNISTJudge(
+            N_to_mask=args.N_to_mask, estimator_model_dir=args.estimator_model_dir
+        )
     elif args.dataset == "fashion":
-        judge = FashionJudge(N_to_mask=args.N_to_mask, model_dir=path)
+        judge = FashionJudge(
+            N_to_mask=args.N_to_mask, estimator_model_dir=args.estimator_model_dir
+        )
     else:
         raise Exception("Unknown dataset " + args.dataset)
 
-    judge.train(args.train_steps)
-    print(judge.evaluate_accuracy())
+    # judge.train(args.train_steps)
+    # print(judge.evaluate_accuracy())
+    judge.export_as_saved_model(args.predictor_saved_model_dir)

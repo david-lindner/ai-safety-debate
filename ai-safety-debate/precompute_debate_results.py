@@ -22,7 +22,9 @@ def get_debate_results(start_point, batch_size, N_train, N_to_mask, judge_path):
     # work together with multiprocessing
     from judge import MNISTJudge
 
-    judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=judge_path, binary_rewards=False)
+    judge = MNISTJudge(
+        N_to_mask=N_to_mask, predictor_saved_model_dir=judge_path, binary_rewards=False
+    )
     train_data = judge.train_data
 
     result_list = []

@@ -115,12 +115,7 @@ class Judge:
         first players label and the second players label.
         """
         assert len(initial_statements) == 2
-        input = np.reshape(
-            input, self.shape
-        )  # reshapes vectors into images, if appropriate
-        prediction = self.predictor({"masked_x": input})
-        probs = prediction["probabilities"][0]
-        # print("probs", probs)
+        probs = self.full_report(input)
 
         # Initial statement of None corresponds to agents that have not precommited.
         # The unrestricted ( = non-precommited) player gets the probability of the best non-taken label
@@ -151,6 +146,9 @@ class Judge:
         return utility
 
     def full_report(self, input):
+        input = np.reshape(
+            input, self.shape
+        )  # reshapes vectors into images, if appropriate
         prediction = self.predictor({"masked_x": input})
         probabilities = prediction["probabilities"][0]
         return probabilities

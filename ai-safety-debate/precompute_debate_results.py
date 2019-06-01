@@ -46,12 +46,23 @@ def get_debate_results(start_point, batch_size, N_train, N_to_mask, judge_path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--N-to-mask", type=int, help="Number of features revealed as an input"
+        "--N-to-mask",
+        type=int,
+        help="Number of features revealed as an input",
+        required=True,
     )
-    parser.add_argument("--judge-path", type=str, help="Path to load the judge from")
-    parser.add_argument("--rollouts", type=int, help="Number of rollouts for MCTS")
-    parser.add_argument("--outfile", type=str, help="Path to save the results to")
-    parser.add_argument("--N-threads", type=int, help="Number of threads")
+    parser.add_argument(
+        "--judge-path", type=str, help="Path to load the judge from", required=True
+    )
+    parser.add_argument(
+        "--rollouts", type=int, help="Number of rollouts for MCTS", required=True
+    )
+    parser.add_argument(
+        "--outfile", type=str, help="Path to save the results to", required=True
+    )
+    parser.add_argument(
+        "--N-threads", type=int, help="Number of threads", required=True
+    )
     parser.add_argument(
         "--N-train",
         type=int,

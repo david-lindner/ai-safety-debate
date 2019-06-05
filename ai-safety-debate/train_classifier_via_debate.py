@@ -1,7 +1,7 @@
 """
 Train a MNIST classifier from a sparse judge combined with a debate.
 """
-
+import time
 import numpy as np
 
 from sacred import Experiment
@@ -26,6 +26,7 @@ def cfg():
     classifier_path = None
     cheat_debate = True
     only_update_for_wins = False
+    precomputed_debate_results_path = None
 
 
 @ex.automain
@@ -39,6 +40,7 @@ def run(
     classifier_path,
     cheat_debate,
     only_update_for_wins,
+    precomputed_debate_results_path,
 ):
     if judge_path:
         path = judge_path
@@ -57,6 +59,15 @@ def run(
     judge_accuracy = judge.evaluate_accuracy()
     print("Judge accuracy:", judge_accuracy)
 
+    if precomputed_debate_results_path is not None:
+        debate_results = np.fromfile(precomputed_debate_results_path).reshape(
+            -1, 10, 10
+        )
+        print("Loaded debate results from", precomputed_debate_results_path)
+        print("These will be used for training instead of re-running the debates.")
+    else:
+        debate_results = None
+
     train_data = judge.train_data
     N_train = len(judge.train_labels)
     eval_data = judge.eval_data
@@ -66,6 +77,8 @@ def run(
     batch_samples = []
     batch_labels = []
     batch_weights = []
+
+    t = time.time()
 
     for epoch in range(N_epochs):
         for i in range(N_train):
@@ -82,6 +95,13 @@ def run(
             if cheat_debate:
                 # simulate a perfectly accurate debate
                 utility = -1 if label == judge.train_labels[i] else 0
+            elif debate_results is not None:
+                # use precompuded results
+                probabilities = debate_results[i, label]
+                if np.all(probabilities[label] >= probabilities):
+                    utility = -1
+                else:
+                    utility = 0
             else:
                 # run non-precommited debate
                 agent1 = DebateAgent(precommit_label=None, agentStrength=rollouts)
@@ -111,6 +131,9 @@ def run(
                 acc = debate_classifier.evaluate_accuracy(eval_data, eval_labels)
                 print("Updated debate_classifier", flush=True)
                 print("Evaluation accuracy", acc, flush=True)
+                t2 = time.time()
+                print("Batch time ", t2 - t)
+                t = t2
                 batch_samples = []
                 batch_labels = []
                 batch_weights = []

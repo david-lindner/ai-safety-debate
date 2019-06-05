@@ -28,6 +28,7 @@ def get_debate_results(start_point, batch_size, N_train, N_to_mask, judge_path):
     result_list = []
     for i in range(batch_size):
         print("i", start_point + i, flush=True)
+        t = time.time()
         if start_point + i > N_train:  # end of dataset
             break
         results_per_label = np.zeros([10, 10])
@@ -40,6 +41,7 @@ def get_debate_results(start_point, batch_size, N_train, N_to_mask, judge_path):
             probabilities = debate.play(full_report=True)
             results_per_label[label] = probabilities
         result_list.append(results_per_label)
+        print("time", time.time() - t)
     return result_list
 
 

@@ -12,8 +12,6 @@ class Judge:
             self.estimator = tf.estimator.Estimator(
                 model_fn=self.model_fn,
                 model_dir=model_dir,    # directory to restore model from and save model to
-                # Only the latest checkpoint is saved, so you don't have to upload/download as much data
-                config=tf.estimator.RunConfig(keep_checkpoint_max=1)
             )
         except AttributeError:
             raise Exception("Subclass needs to define a model_fn")

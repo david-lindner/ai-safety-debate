@@ -1,9 +1,10 @@
 #!/bin/bash
 #
 #SBATCH --job-name=amplify_batch
-#SBATCH --output=amplify_out.txt
+#SBATCH --output=amplify_batch_out.txt
 #
 #SBATCH --time=24:00:00
+#SBATCH --mem-per-cpu=70G
 #
 #SBATCH --array=0-15
 
@@ -19,6 +20,6 @@ srun -o ~/ai-safety-debate/out_from_experiments/amplify_$SLURM_ARRAY_TASK_ID.out
 	10000 \
 	${EVAL_UNRESTRICTED[$(($SLURM_ARRAY_TASK_ID / 4 % 2))]} \
 	${INDEX_OF_TRUTH_AGENT[$(($SLURM_ARRAY_TASK_ID / 4 / 2 % 2))]} \
-	'mnist' \
+	'fashion' \
 	6 \
-	'saved_models/mnist6'
+	'saved_models/fashion6'

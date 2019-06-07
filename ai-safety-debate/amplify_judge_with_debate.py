@@ -144,6 +144,7 @@ def built_confusion_matrix(confusion_matrix_counter, labels_frequency, show_matr
     """
     Computes, saves and optionaly plots the confusion matrix.
     """
+    assert plt_available, "Images can't be plotted or saved without plt (yet)"
 
     # normalize according to frequencies of the labels and multiply by 100 
     normalized_confusion_matrix = confusion_matrix_counter

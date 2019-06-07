@@ -1,9 +1,7 @@
 """
 Train a MNIST classifier from a sparse judge combined with a debate.
-
 """
-
-
+import time
 import numpy as np
 
 from sacred import Experiment
@@ -27,6 +25,8 @@ def cfg():
     batch_size = 128
     classifier_path = None
     cheat_debate = True
+    only_update_for_wins = False
+    precomputed_debate_results_path = None
 
 
 @ex.automain
@@ -39,6 +39,8 @@ def run(
     batch_size,
     classifier_path,
     cheat_debate,
+    only_update_for_wins,
+    precomputed_debate_results_path,
 ):
     if judge_path:
         path = judge_path
@@ -54,6 +56,23 @@ def run(
     else:
         raise Exception("Unknown dataset in " + "dataset.txt: " + dataset)
 
+    judge_accuracy = judge.evaluate_accuracy()
+    print("Judge accuracy:", judge_accuracy)
+
+    if precomputed_debate_results_path is not None:
+        if cheat_debate:
+            raise Exception(
+                "cheat_debate should not be enabled when training "
+                "from precomputed debate results"
+            )
+        debate_results = np.fromfile(precomputed_debate_results_path).reshape(
+            -1, 10, 10
+        )
+        print("Loaded debate results from", precomputed_debate_results_path)
+        print("These will be used for training instead of re-running the debates.")
+    else:
+        debate_results = None
+
     train_data = judge.train_data
     N_train = len(judge.train_labels)
     eval_data = judge.eval_data
@@ -64,9 +83,11 @@ def run(
     batch_labels = []
     batch_weights = []
 
+    t = time.time()
+
     for epoch in range(N_epochs):
         for i in range(N_train):
-            print(i, flush=True)
+            # print(i, flush=True)
             sample = train_data[i]
             probs = next(debate_classifier.predict(sample))["probabilities"]
             label = np.random.choice(range(len(probs)), p=probs)
@@ -79,6 +100,13 @@ def run(
             if cheat_debate:
                 # simulate a perfectly accurate debate
                 utility = -1 if label == judge.train_labels[i] else 0
+            elif debate_results is not None:
+                # use precompuded results
+                probabilities = debate_results[i, label]
+                if np.all(probabilities[label] >= probabilities):
+                    utility = -1
+                else:
+                    utility = 0
             else:
                 # run non-precommited debate
                 agent1 = DebateAgent(precommit_label=None, agentStrength=rollouts)
@@ -86,7 +114,11 @@ def run(
                 debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
                 utility = debate.play()
 
-            weight = 1 if utility == -1 else -1
+            if only_update_for_wins:
+                weight = 1 if utility == -1 else 0
+            else:
+                weight = 1 if utility == -1 else -1
+
             # print("weight", weight)
             batch_samples.append(sample)
             batch_labels.append(label)
@@ -104,6 +136,9 @@ def run(
                 acc = debate_classifier.evaluate_accuracy(eval_data, eval_labels)
                 print("Updated debate_classifier", flush=True)
                 print("Evaluation accuracy", acc, flush=True)
+                t2 = time.time()
+                print("Batch time ", t2 - t)
+                t = t2
                 batch_samples = []
                 batch_labels = []
                 batch_weights = []

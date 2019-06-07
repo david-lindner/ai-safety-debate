@@ -60,6 +60,11 @@ def run(
     print("Judge accuracy:", judge_accuracy)
 
     if precomputed_debate_results_path is not None:
+        if cheat_debate:
+            raise Exception(
+                "cheat_debate should not be enabled when training "
+                "from precomputed debate results"
+            )
         debate_results = np.fromfile(precomputed_debate_results_path).reshape(
             -1, 10, 10
         )

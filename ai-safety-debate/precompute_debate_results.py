@@ -66,6 +66,12 @@ if __name__ == "__main__":
         "--N-threads", type=int, help="Number of threads", required=True
     )
     parser.add_argument(
+        "--start-sample",
+        type=int,
+        help="Start at a specific training example (to split up the precomputation across jobs).",
+        default=0,
+    )
+    parser.add_argument(
         "--N-train",
         type=int,
         help="Number of training labels to precompute debate results for."
@@ -75,9 +81,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    results = np.zeros((args.N_train, 10))
-    batch_size = math.ceil(args.N_train / args.N_threads)
-    start_points = [i * batch_size for i in range(args.N_threads)]
+    results = np.zeros((args.N_train - args.start_sample, 10))
+    batch_size = math.ceil((args.N_train - args.start_sample) / args.N_threads)
+    start_points = [start_sample + i * batch_size for i in range(args.N_threads)]
 
     get_debate_results_partial = functools.partial(
         get_debate_results,

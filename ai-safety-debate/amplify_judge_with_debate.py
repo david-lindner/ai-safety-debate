@@ -4,7 +4,6 @@ Run the debate evaluation on a dataset. Many features included.
 
 import time
 import numpy as np
-import matplotlib.pyplot as plt
 from os import remove
 
 from sacred import Experiment
@@ -13,6 +12,12 @@ from sacred.observers import FileStorageObserver
 from judge import MNISTJudge, FashionJudge
 from debate import Debate
 from agent import DebateAgent
+
+try:
+    import matplotlib.pyplot as plt
+    plt_available = True
+except ModuleNotFoundError:
+    plt_available = False
 
 ex = Experiment("mnist_debate_eval")
 ex.observers.append(FileStorageObserver.create("amplification_experiments"))

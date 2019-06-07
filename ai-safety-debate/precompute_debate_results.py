@@ -17,24 +17,29 @@ from debate import Debate
 from agent import DebateAgent
 
 
-def get_debate_results(start_point, batch_size, N_train, N_to_mask, judge_path):
+def get_debate_results(
+    start_point, use_test_data, batch_size, N_samples, N_to_mask, judge_path
+):
     # MNISTJudge has to be imported here, because otherwise tensorflow does not
     # work together with multiprocessing
     from judge import MNISTJudge
 
     judge = MNISTJudge(N_to_mask=N_to_mask, model_dir=judge_path, binary_rewards=False)
-    train_data = judge.train_data
+    if use_test_data:
+        dataset = judge.eval_data
+    else:
+        dataset = judge.train_data
 
     result_list = []
     for i in range(batch_size):
         print("i", start_point + i, flush=True)
         t = time.time()
-        if start_point + i > N_train:  # end of dataset
+        if start_point + i > dataset.shape[0]:  # end of dataset
             break
         results_per_label = np.zeros([10, 10])
         for label in range(10):
             # print("label", label)
-            sample = train_data[start_point + i]
+            sample = dataset[start_point + i]
             agent1 = DebateAgent(precommit_label=None, agentStrength=args.rollouts)
             agent2 = DebateAgent(precommit_label=label, agentStrength=args.rollouts)
             debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
@@ -66,29 +71,35 @@ if __name__ == "__main__":
         "--N-threads", type=int, help="Number of threads", required=True
     )
     parser.add_argument(
+        "--use-test-data",
+        help="If set to true, the test set will be used instead of the train set.",
+        default=False,
+        action="store_true",
+    )
+    parser.add_argument(
         "--start-sample",
         type=int,
         help="Start at a specific training example (to split up the precomputation across jobs).",
         default=0,
     )
     parser.add_argument(
-        "--N-train",
+        "--N-samples",
         type=int,
-        help="Number of training labels to precompute debate results for."
-        "Can be used to test this for a small set of images.",
+        help="Number of samples to precompute debate results for.",
         default=60000,
     )
 
     args = parser.parse_args()
 
-    results = np.zeros((args.N_train - args.start_sample, 10))
-    batch_size = math.ceil((args.N_train - args.start_sample) / args.N_threads)
-    start_points = [start_sample + i * batch_size for i in range(args.N_threads)]
+    results = np.zeros((args.N_samples, 10))
+    batch_size = math.ceil(args.N_samples / args.N_threads)
+    start_points = [args.start_sample + i * batch_size for i in range(args.N_threads)]
 
     get_debate_results_partial = functools.partial(
         get_debate_results,
+        use_test_data=args.use_test_data,
         batch_size=batch_size,
-        N_train=args.N_train,
+        N_samples=args.N_samples,
         N_to_mask=args.N_to_mask,
         judge_path=args.judge_path,
     )

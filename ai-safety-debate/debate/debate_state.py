@@ -30,8 +30,10 @@ class DebateState:
         self.player_order = player_order
 
     def getPossibleActions(self):
-        """Shows the not selected and nonzero features."""
-        return np.where((self.mask.sum(axis=0) == 0) & (self.sample != 0))[0]
+        """Shows the not selected features."""
+        return np.where(self.mask.sum(axis=0) == 0)[0]
+        # """Shows the not selected and nonzero features."""
+        # return np.where((self.mask.sum(axis=0) == 0) & (self.sample != 0))[0]
 
     def takeAction(self, action):
         """Adds the latest action to the mask and changes the player."""

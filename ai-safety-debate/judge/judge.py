@@ -50,13 +50,15 @@ class Judge:
         """
         shape = tf.shape(batch)
         p = tf.random_uniform(shape, 0, 1)
-        nonzero_p = tf.where(batch > 0, p, tf.zeros_like(p))
-        _, indices = tf.nn.top_k(nonzero_p, self.N_to_mask)
+        p = tf.where(batch > 0, p, -p) # each number is positive if > 0, else negative
+        _, nonzero_indices = tf.nn.top_k(p, self.N_to_mask - self.n_zero) # sample positive
+        _, zero_indices = tf.nn.top_k(-p, self.n_zero)                    # sample negative
+        indices = tf.concat([nonzero_indices,zero_indices],1)
         mask = tf.one_hot(indices, shape[1], axis=1)
         mask = tf.reduce_sum(mask, axis=2)
         return tf.stack((mask, mask * batch), 2)
 
-    def train(self, n_steps):
+    def train(self, n_steps, n_zero=0):
         # Train the model
         train_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": self.train_data},
@@ -65,7 +67,17 @@ class Judge:
             num_epochs=None,
             shuffle=True,
         )
-        self.estimator.train(input_fn=train_input_fn, steps=n_steps)
+
+        if type(n_steps) == int:
+            assert type(n_zero) == int
+            n_steps = [n_steps]
+            n_zero = [n_zero]
+        assert len(n_steps) == len(n_zero)
+
+        for s,z in zip(n_steps, n_zero):
+            assert z <= self.N_to_mask
+            self.n_zero = z
+            self.estimator.train(input_fn=train_input_fn, steps=s)
 
         # Replace the old predictor with one created from the new estimator
         self.update_predictor()

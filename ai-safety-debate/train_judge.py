@@ -15,7 +15,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--N-to-mask", type=int, help="Number of features revealed as an input"
     )
-    parser.add_argument("--train-steps", type=int, help="Number of training steps")
+    parser.add_argument(
+        "--train-steps", nargs="*", type=int, 
+        help="Number of training steps. If more than 1, apply to corresponding index of n-zero"
+    )
+    parser.add_argument(
+        "--n-zero", nargs="*", type=int, help="Number of 0-pixels to sample"
+    )
     parser.add_argument(
         "--path", type=str, help="Path to save the trained judge to (and restore from)"
     )
@@ -31,6 +37,6 @@ if __name__ == "__main__":
         raise Exception("Unknown dataset " + args.dataset)
 
     t = time.time()
-    judge.train(args.train_steps)
+    judge.train(args.train_steps, args.n_zero)
     print('Time', time.time() - t)
     print('Accuracy', judge.evaluate_accuracy())

@@ -5,6 +5,7 @@ Pretrained judges can be founed in our Google Drive folder.
 
 from judge import MNISTJudge, FashionJudge
 import argparse
+import time
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -29,5 +30,7 @@ if __name__ == "__main__":
     else:
         raise Exception("Unknown dataset " + args.dataset)
 
+    t = time.time()
     judge.train(args.train_steps)
-    print(judge.evaluate_accuracy())
+    print('Time', time.time() - t)
+    print('Accuracy', judge.evaluate_accuracy())

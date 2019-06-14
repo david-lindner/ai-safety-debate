@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import sys
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 
@@ -71,9 +72,9 @@ class Judge:
 
         if type(n_zero) == int:
             self.zero_logits = [[np.inf if i == n_zero else -np.inf for i in range(self.N_to_mask)]]
-            
         else:
-            assert n_zero == len(n_zero)
+            assert len(n_zero) == self.N_to_mask + 1
+            assert 0.99 < sum(n_zero) < 1.01
             self.zero_logits = [[np.log(p/(1-p)) for p in n_zero]]
 
         self.estimator.train(input_fn=train_input_fn, steps=n_steps)

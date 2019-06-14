@@ -49,10 +49,11 @@ class Judge:
         of the input vector. Combine this with the vector to create the input for the DNN.
         """
         shape = tf.shape(batch)
+        n_zero = tf.random.categorical(logits=self.zero_logits,num_samples=1,dtype=tf.int32)
         p = tf.random_uniform(shape, 0, 1)
         p = tf.where(batch > 0, p, -p) # each number is positive if > 0, else negative
-        _, nonzero_indices = tf.nn.top_k(p, self.N_to_mask - self.n_zero) # sample positive
-        _, zero_indices = tf.nn.top_k(-p, self.n_zero)                    # sample negative
+        _, nonzero_indices = tf.nn.top_k(p, self.N_to_mask - n_zero[0][0]) # sample positive
+        _, zero_indices = tf.nn.top_k(-p, n_zero[0][0])                    # sample negative
         indices = tf.concat([nonzero_indices,zero_indices],1)
         mask = tf.one_hot(indices, shape[1], axis=1)
         mask = tf.reduce_sum(mask, axis=2)
@@ -68,26 +69,33 @@ class Judge:
             shuffle=True,
         )
 
-        if type(n_steps) == int:
-            assert type(n_zero) == int
-            n_steps = [n_steps]
-            n_zero = [n_zero]
-        assert len(n_steps) == len(n_zero)
+        if type(n_zero) == int:
+            self.zero_logits = [[np.inf if i == n_zero else -np.inf for i in range(self.N_to_mask)]]
+            
+        else:
+            assert n_zero == len(n_zero)
+            self.zero_logits = [[np.log(p/(1-p)) for p in n_zero]]
 
-        for s,z in zip(n_steps, n_zero):
-            assert z <= self.N_to_mask
-            self.n_zero = z
-            self.estimator.train(input_fn=train_input_fn, steps=s)
+        self.estimator.train(input_fn=train_input_fn, steps=n_steps)
 
         # Replace the old predictor with one created from the new estimator
         self.update_predictor()
 
-    def evaluate_accuracy(self):
+    def evaluate_accuracy(self, n_zero=None):
         # Evaluate the accuracy on all the eval_data
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": self.eval_data}, y=self.eval_labels, num_epochs=1, shuffle=False
         )
-        eval_results = self.estimator.evaluate(input_fn=eval_input_fn)
+        if type(n_zero) == list:
+            eval_results = []
+            for z in n_zero:
+                self.n_zero = z
+                eval_results.append(self.estimator.evaluate(input_fn=eval_input_fn))
+        else:
+            if not n_zero is None:
+                self.n_zero = n_zero
+            eval_results = self.estimator.evaluate(input_fn=eval_input_fn)
+
         return eval_results
 
     def evaluate_accuracy_using_predictor(self):

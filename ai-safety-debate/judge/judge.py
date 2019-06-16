@@ -74,7 +74,7 @@ class Judge:
             self.zero_logits = [[0 if i == n_zero else -np.inf for i in range(self.N_to_mask + 1)]]
         else:
             assert len(n_zero) == self.N_to_mask + 1
-            self.zero_logits = [np.log(n_zero)]
+            self.zero_logits = np.log(n_zero).reshape((1,-1))
 
         self.estimator.train(input_fn=train_input_fn, steps=n_steps)
 

@@ -36,7 +36,13 @@ if __name__ == "__main__":
     else:
         raise Exception("Unknown dataset " + args.dataset)
 
+    n_zero = args.n_zero if len(args.n_zero) > 1 else args.n_zero[0]
     t = time.time()
-    judge.train(args.train_steps, args.n_zero if len(args.n_zero) > 1 else args.n_zero[0])
+    if args.train_steps == 0:
+        print('Received 0 steps. Will not train.')
+    else:
+        judge.train(args.train_steps, n_zero)
     print('Time', time.time() - t)
-    print('Accuracy', judge.evaluate_accuracy(args.n_zero))
+    print('Accuracy', judge.evaluate_accuracy(n_zero))
+    for i in range(args.N_to_mask + 1):
+        print('Accuracy', i, 'black pixels', judge.evaluate_accuracy(i))

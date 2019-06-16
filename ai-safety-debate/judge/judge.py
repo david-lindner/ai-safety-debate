@@ -70,12 +70,11 @@ class Judge:
             shuffle=True,
         )
 
-        if type(n_zero) == int:
-            self.zero_logits = [[np.inf if i == n_zero else -np.inf for i in range(self.N_to_mask)]]
+        if type(n_zero) != list:
+            self.zero_logits = [[0 if i == n_zero else -np.inf for i in range(self.N_to_mask + 1)]]
         else:
             assert len(n_zero) == self.N_to_mask + 1
-            assert 0.99 < sum(n_zero) < 1.01
-            self.zero_logits = [[np.log(p/(1-p)) for p in n_zero]]
+            self.zero_logits = [np.log(n_zero)]
 
         self.estimator.train(input_fn=train_input_fn, steps=n_steps)
 
@@ -85,19 +84,19 @@ class Judge:
     def evaluate_accuracy(self, n_zero=None):
         # Evaluate the accuracy on all the eval_data
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={"x": self.eval_data}, y=self.eval_labels, num_epochs=1, shuffle=False
+            x={"x": self.eval_data}, 
+            y=self.eval_labels, 
+            num_epochs=1, 
+            shuffle=False
         )
-        if type(n_zero) == list:
-            eval_results = []
-            for z in n_zero:
-                self.n_zero = z
-                eval_results.append(self.estimator.evaluate(input_fn=eval_input_fn))
-        else:
-            if not n_zero is None:
-                self.n_zero = n_zero
-            eval_results = self.estimator.evaluate(input_fn=eval_input_fn)
 
-        return eval_results
+        if type(n_zero) != list:
+            self.zero_logits = [[0 if i == n_zero else -np.inf for i in range(self.N_to_mask + 1)]]
+        else:
+            assert len(n_zero) == self.N_to_mask + 1
+            self.zero_logits = np.log(n_zero).reshape((1,-1))
+
+        return self.estimator.evaluate(input_fn=eval_input_fn)
 
     def evaluate_accuracy_using_predictor(self):
         """

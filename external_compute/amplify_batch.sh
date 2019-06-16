@@ -20,6 +20,6 @@ srun -o ~/ai-safety-debate/out_from_experiments/amplify_$SLURM_ARRAY_TASK_ID.out
 	10000 \
 	${EVAL_UNRESTRICTED[$(($SLURM_ARRAY_TASK_ID / 4 % 2))]} \
 	${INDEX_OF_TRUTH_AGENT[$(($SLURM_ARRAY_TASK_ID / 4 / 2 % 2))]} \
-	'fashion' \
-	6 \
-	'saved_models/fashion6'
+	'mnist' \
+	4 \
+	'saved_models/mnist4evenzero'

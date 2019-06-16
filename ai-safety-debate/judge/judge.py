@@ -132,9 +132,7 @@ class Judge:
         first players label and the second players label.
         """
         assert len(initial_statements) == 2
-        input = np.reshape(input, self.shape)  # reshapes vectors into images, if appropriate
-        prediction = self.predictor({"masked_x": input})
-        probs = prediction["probabilities"][0]
+        probs = self.full_report(input)
         # print("probs", probs)
 
         # Initial statement of None corresponds to agents that have not precommited.
@@ -166,6 +164,7 @@ class Judge:
         return utility
 
     def full_report(self, input):
+        input = np.reshape(input, self.shape)  # reshapes vectors into images, if appropriate
         prediction = self.predictor({"masked_x": input})
         probabilities = prediction["probabilities"][0]
         return probabilities

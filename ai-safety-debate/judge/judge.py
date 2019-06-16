@@ -81,7 +81,7 @@ class Judge:
         # Replace the old predictor with one created from the new estimator
         self.update_predictor()
 
-    def evaluate_accuracy(self, n_zero=None):
+    def evaluate_accuracy(self, n_zero=0):
         # Evaluate the accuracy on all the eval_data
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": self.eval_data}, 

@@ -23,9 +23,11 @@ def cfg():
     rollouts = 1000
     N_epochs = 1
     batch_size = 128
+    learning_rate = 1e-4
+    learning_rate_decay = False
     classifier_path = None
-    cheat_debate = True
-    only_update_for_wins = False
+    cheat_debate = False
+    only_update_for_wins = True
     precomputed_debate_results_path = None
 
 
@@ -77,7 +79,12 @@ def run(
     N_train = len(judge.train_labels)
     eval_data = judge.eval_data
     eval_labels = judge.eval_labels
-    debate_classifier = DebateClassifier(model_dir=classifier_path)
+
+    debate_classifier = DebateClassifier(
+        learning_rate=learning_rate,
+        learning_rate_decay=learning_rate_decay,
+        model_dir=classifier_path,
+    )
 
     batch_samples = []
     batch_labels = []

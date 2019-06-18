@@ -123,9 +123,9 @@ class DebateClassifier:
         # Configure the Training Op (for TRAIN mode)
         if mode == tf.estimator.ModeKeys.TRAIN:
             global_step = tf.train.get_global_step()
-            if self.decay_learning_rate:
+            if self.learning_rate_decay:
                 learning_rate = tf.train.exponential_decay(
-                    learning_rate, global_step, 10000, 0.95, staircase=True
+                    self.learning_rate, global_step, 10000, 0.95, staircase=True
                 )
             else:
                 learning_rate = self.learning_rate

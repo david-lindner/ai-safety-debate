@@ -39,6 +39,8 @@ def run(
     rollouts,
     N_epochs,
     batch_size,
+    learning_rate,
+    learning_rate_decay,
     classifier_path,
     cheat_debate,
     only_update_for_wins,

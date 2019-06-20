@@ -140,7 +140,7 @@ def evaluate_sample_unrestricted(N_to_mask, sample, label, judge, rollouts, inde
             truth_won = False
     return truth_won
 
-def built_confusion_matrix(confusion_matrix_counter, labels_frequency, show_matrix=False):
+def build_confusion_matrix(confusion_matrix_counter, labels_frequency, dataset, show_matrix=False):
     """
     Computes, saves and optionaly plots the confusion matrix.
     """
@@ -318,4 +318,4 @@ def run(
     )
 
     if compute_confusion_matrix:
-        built_confusion_matrix(confusion_matrix_counter, labels_frequency, show_matrix=False)
+        build_confusion_matrix(confusion_matrix_counter, labels_frequency, dataset, show_matrix=False)

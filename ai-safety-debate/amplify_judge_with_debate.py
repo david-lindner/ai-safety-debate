@@ -4,7 +4,7 @@ Run the debate evaluation on a dataset. Many features included.
 
 import time
 import numpy as np
-from os import remove
+from os import remove, mkdir
 
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
@@ -37,6 +37,7 @@ def cfg():
     changing_sides = True
     compute_confusion_matrix = False
     precom_eval_seeds = 3
+    image_directory = None
 
 
 def evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides, seeds=3, confusion_matrix_counter=None):
@@ -106,7 +107,7 @@ def evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_
     return truth_won
 
 
-def evaluate_sample_unrestricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides):
+def evaluate_sample_unrestricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides, filename=None):
     """
     Evaluate unrestricted debate (without precommit)
     """
@@ -123,7 +124,7 @@ def evaluate_sample_unrestricted(N_to_mask, sample, label, judge, rollouts, inde
             debug=False,
             changing_sides=changing_sides,
         )
-        this_game_utility = debate.play()
+        this_game_utility = debate.play(filename=filename)
         if this_game_utility == -1:
             truth_won = False
     else:
@@ -135,7 +136,7 @@ def evaluate_sample_unrestricted(N_to_mask, sample, label, judge, rollouts, inde
             debug=False,
             changing_sides=changing_sides,
         )
-        this_game_utility = debate.play()
+        this_game_utility = debate.play(filename=filename)
         if this_game_utility == 1:
             truth_won = False
     return truth_won
@@ -210,6 +211,7 @@ def run(
     changing_sides,
     compute_confusion_matrix,
     precom_eval_seeds,
+    image_directory,
 ):
 
     """
@@ -284,13 +286,28 @@ def run(
 
         # Reproduce the experiment from AI safety via debate paper
         if not eval_unrestricted:
-            truth_won = evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides, precom_eval_seeds, confusion_matrix_counter=confusion_matrix_counter)
+            assert image_directory is None, "Image saving not implemented for unrestricted"
+            truth_won = evaluate_sample_restricted(
+                N_to_mask, sample, label, judge, rollouts,
+                index_of_truth_agent, changing_sides, 
+                precom_eval_seeds, confusion_matrix_counter
+            )
             if compute_confusion_matrix:
                 labels_frequency[label] += 1
 
         # Evaluate unrestricted debate (without precommit)
         else:
-            truth_won = evaluate_sample_unrestricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides)
+            if image_directory:
+                try:
+                    mkdir(image_directory)
+                    print('Created directory', image_directory)
+                except FileExistsError:
+                    print('Using existing directory', image_directory)
+                filename = image_directory+'/img'+str(sample_id)
+            truth_won = evaluate_sample_unrestricted(
+                N_to_mask, sample, label, judge, rollouts, 
+                index_of_truth_agent, changing_sides, filename
+            )
 
         print("\t Sample {}".format(sample_id + 1), end=" ", flush=True)
         if truth_won:

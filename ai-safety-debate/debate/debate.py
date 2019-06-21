@@ -1,11 +1,6 @@
 import numpy as np
 from .debate_state import DebateState
-
-try:
-    from util.visualization import plot_image_mask
-    visualization_available = True
-except ImportError:
-    visualization_available = False
+from util.visualization import plot_image_mask
 
 
 class Debate:
@@ -60,17 +55,22 @@ class Debate:
         )
 
 
-    def play(self, full_report=False):
+    def play(self, full_report=False, filename=None):
         """
         Runs the debate and returns its result.
         :param full_report: Turning this on makes the debate return a vector of probabilities (one for each label).
         :return: By default, this returns the utility of the first player in the debate, maximum is 1, minimum is -1.
         """
+        index = 0
         while not self.current_state.isTerminal():
             action = self.agents[self.current_state.current_player].select_move(self)
             self.current_state = self.current_state.takeAction(action)
-            if self.debug and visualization_available:
-                plot_image_mask(self.current_state)
+            if self.debug or filename:
+                plot_image_mask(
+                    self.current_state,
+                    None if filename is None else filename+'_'+str(index),
+                )
+                index += 1
         mask = self.current_state.mask.sum(axis=0)
         if full_report:
             probabilities = self.judge.full_report(

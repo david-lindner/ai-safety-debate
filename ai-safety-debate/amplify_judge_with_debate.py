@@ -304,6 +304,8 @@ def run(
                 except FileExistsError:
                     print('Using existing directory', image_directory)
                 filename = image_directory+'/img'+str(sample_id)
+            else:
+                filename = None
             truth_won = evaluate_sample_unrestricted(
                 N_to_mask, sample, label, judge, rollouts, 
                 index_of_truth_agent, changing_sides, filename

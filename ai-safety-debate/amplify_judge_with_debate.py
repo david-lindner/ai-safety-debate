@@ -4,7 +4,7 @@ Run the debate evaluation on a dataset. Many features included.
 
 import time
 import numpy as np
-from os import remove, mkdir
+from os import remove, makedirs
 
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
@@ -299,7 +299,7 @@ def run(
         else:
             if image_directory:
                 try:
-                    mkdir(image_directory)
+                    makedirs(image_directory)
                     print('Created directory', image_directory)
                 except FileExistsError:
                     print('Using existing directory', image_directory)

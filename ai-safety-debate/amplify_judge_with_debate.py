@@ -298,11 +298,7 @@ def run(
         # Evaluate unrestricted debate (without precommit)
         else:
             if image_directory:
-                try:
-                    makedirs(image_directory)
-                    print('Created directory', image_directory)
-                except FileExistsError:
-                    print('Using existing directory', image_directory)
+                makedirs(image_directory, exist_ok=True)
                 filename = image_directory+'/img'+str(sample_id)
             else:
                 filename = None

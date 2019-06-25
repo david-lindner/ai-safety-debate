@@ -29,6 +29,8 @@ def cfg():
     cheat_debate = False
     only_update_for_wins = True
     precomputed_debate_results_path = None
+    shuffle_batches = True
+    use_dropout = True
 
 
 @ex.automain
@@ -45,6 +47,8 @@ def run(
     cheat_debate,
     only_update_for_wins,
     precomputed_debate_results_path,
+    shuffle_batches,
+    use_dropout,
 ):
     if judge_path:
         path = judge_path
@@ -86,6 +90,7 @@ def run(
         learning_rate=learning_rate,
         learning_rate_decay=learning_rate_decay,
         model_dir=classifier_path,
+        use_dropout=use_dropout,
     )
 
     batch_samples = []
@@ -110,7 +115,7 @@ def run(
                 # simulate a perfectly accurate debate
                 utility = -1 if label == judge.train_labels[i] else 0
             elif debate_results is not None:
-                # use precompuded results
+                # use precomputed results
                 probabilities = debate_results[i, label]
                 if np.all(probabilities[label] >= probabilities):
                     utility = -1
@@ -141,6 +146,7 @@ def run(
                     np.array(batch_samples),
                     np.array(batch_labels),
                     np.array(batch_weights),
+                    shuffle=shuffle_batches,
                 )
                 acc = debate_classifier.evaluate_accuracy(eval_data, eval_labels)
                 print("Updated debate_classifier", flush=True)

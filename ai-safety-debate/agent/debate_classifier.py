@@ -14,6 +14,7 @@ class DebateClassifier:
         sample_shape=[28, 28],
         model_dir=None,
         log_dir=None,
+        use_dropout=True,
     ):
         self.sample_shape = sample_shape
         self.estimator = tf.estimator.Estimator(
@@ -21,8 +22,9 @@ class DebateClassifier:
         )
         self.learning_rate = learning_rate
         self.learning_rate_decay = learning_rate_decay
+        self.use_dropout = True
 
-    def train(self, np_batch, labels, loss_weights):
+    def train(self, np_batch, labels, loss_weights, shuffle=True):
         """
         Train for one batch of data.
 
@@ -41,7 +43,7 @@ class DebateClassifier:
             y=labels,
             batch_size=batch_size,
             num_epochs=1,
-            shuffle=True,
+            shuffle=shuffle,
         )
         self.estimator.train(input_fn=train_input_fn)
 
@@ -92,9 +94,13 @@ class DebateClassifier:
         # Dense Layer
         pool2_flat = tf.reshape(pool2, [-1, 7 * 7 * 64])
         dense = tf.layers.dense(inputs=pool2_flat, units=1024, activation=tf.nn.relu)
-        dropout = tf.layers.dropout(
-            inputs=dense, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN
-        )
+
+        if use_dropout:
+            dropout = tf.layers.dropout(
+                inputs=dense, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN
+            )
+        else:
+            dropout = dense
 
         # Logits Layer
         logits = tf.layers.dense(inputs=dropout, units=10)

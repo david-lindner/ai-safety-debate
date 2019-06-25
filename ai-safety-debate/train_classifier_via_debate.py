@@ -31,6 +31,7 @@ def cfg():
     precomputed_debate_results_path = None
     shuffle_batches = True
     use_dropout = True
+    importance_sampling_weights = False
 
 
 @ex.automain
@@ -49,6 +50,7 @@ def run(
     precomputed_debate_results_path,
     shuffle_batches,
     use_dropout,
+    importance_sampling_weights,
 ):
     if judge_path:
         path = judge_path
@@ -116,8 +118,8 @@ def run(
                 utility = -1 if label == judge.train_labels[i] else 0
             elif debate_results is not None:
                 # use precomputed results
-                probabilities = debate_results[i, label]
-                if np.all(probabilities[label] >= probabilities):
+                judge_probabilities = debate_results[i, label]
+                if np.all(judge_probabilities[label] >= judge_probabilities):
                     utility = -1
                 else:
                     utility = 0
@@ -132,6 +134,9 @@ def run(
                 weight = 1 if utility == -1 else 0
             else:
                 weight = 1 if utility == -1 else -1
+
+            if importance_sampling_weights:
+                weight *= min(1 / probs[label], 100)
 
             # print("weight", weight)
             batch_samples.append(sample)

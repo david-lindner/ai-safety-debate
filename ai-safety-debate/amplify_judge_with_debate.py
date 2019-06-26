@@ -269,6 +269,8 @@ def run(
     print("changing_sides:", changing_sides)
     print("compute_confusion_matrix:", compute_confusion_matrix)
     print("precom_eval_seeds:", precom_eval_seeds)
+    print("image_directory:", image_directory)
+    print("allow_black_pixels:", allow_black_pixels)
     print("--------")
     judge_accuracy = judge.evaluate_accuracy()
     print("Judge accuracy:", judge_accuracy)

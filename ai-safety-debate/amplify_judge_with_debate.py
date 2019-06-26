@@ -40,7 +40,7 @@ def cfg():
     image_directory = None
 
 
-def evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides, seeds=3, confusion_matrix_counter=None):
+def evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides, seeds=3, confusion_matrix_counter=None, dirname=None):
     """
     Evaluate the sample using precommited debate as in the AISvD paper, optionaly change the number of seeds (3 seeds in the paper)
     If confusion_matrix_counter is specified, than update the counter so that confusion_matrix_counter[true_label][lying_label] specifies the number of times 'lying_label' won over 'true_label'.
@@ -73,7 +73,9 @@ def evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_
                     debug=False,
                     changing_sides=changing_sides,
                 )
-                this_game_utility = debate.play()
+                this_game_utility = debate.play(
+                    filename = None if dirname is None else dirname+str(lying_agent_label)
+                )
                 if this_game_utility == -1:  # second agent won (lying)
                     liar_win_count += 1
                     if confusion_matrix_counter is not None and game_number == 0:
@@ -246,7 +248,7 @@ def run(
         nmbr_samples = len(judge.eval_data)
 
     if (precom_eval_seeds%2) != 1:
-        raise Expection("Number of seeds to evaluate the precommited debate must be odd")
+        raise Exception("Number of seeds to evaluate the precommited debate must be odd")
 
     print("Parameters")
     print("--------")
@@ -286,11 +288,16 @@ def run(
 
         # Reproduce the experiment from AI safety via debate paper
         if not eval_unrestricted:
-            assert image_directory is None, "Image saving not implemented for unrestricted"
+            if image_directory:
+                dirname = image_directory+'/img'+str(sample_id+1)+'/'
+                makedirs(dirname, exist_ok=True)
+            else:
+                dirname = None
             truth_won = evaluate_sample_restricted(
                 N_to_mask, sample, label, judge, rollouts,
                 index_of_truth_agent, changing_sides, 
-                precom_eval_seeds, confusion_matrix_counter
+                precom_eval_seeds, confusion_matrix_counter,
+                dirname
             )
             if compute_confusion_matrix:
                 labels_frequency[label] += 1
@@ -299,12 +306,13 @@ def run(
         else:
             if image_directory:
                 makedirs(image_directory, exist_ok=True)
-                filename = image_directory+'/img'+str(sample_id)
+                filename = image_directory+'/img'+str(sample_id+1)
             else:
                 filename = None
             truth_won = evaluate_sample_unrestricted(
                 N_to_mask, sample, label, judge, rollouts, 
-                index_of_truth_agent, changing_sides, filename
+                index_of_truth_agent, changing_sides,
+                filename
             )
 
         print("\t Sample {}".format(sample_id + 1), end=" ", flush=True)

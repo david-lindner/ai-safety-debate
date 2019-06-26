@@ -20,7 +20,8 @@ if __name__ == "__main__":
         help="Number of training steps. If more than 1, apply to corresponding index of n-zero"
     )
     parser.add_argument(
-        "--n-zero", nargs="*", type=float, help="Number of 0-pixels to sample"
+        "--n-zero", nargs="*", type=float, default=[0],
+        help="Number of 0-pixels to sample"
     )
     parser.add_argument(
         "--path", type=str, help="Path to save the trained judge to (and restore from)"

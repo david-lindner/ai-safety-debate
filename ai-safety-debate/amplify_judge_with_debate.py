@@ -38,6 +38,7 @@ def cfg():
     compute_confusion_matrix = False
     precom_eval_seeds = 3
     image_directory = None
+    N_images_to_save = None
     allow_black_pixels = False
 
 def evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides, allow_black_pixels, seeds=3, confusion_matrix_counter=None, dirname=None):
@@ -219,6 +220,7 @@ def run(
     compute_confusion_matrix,
     precom_eval_seeds,
     image_directory,
+    N_images_to_save,
     allow_black_pixels,
 ):
 
@@ -255,6 +257,8 @@ def run(
 
     if (precom_eval_seeds%2) != 1:
         raise Exception("Number of seeds to evaluate the precommited debate must be odd")
+    
+    assert image_directory or not N_images_to_save
 
     print("Parameters")
     print("--------")
@@ -270,6 +274,7 @@ def run(
     print("compute_confusion_matrix:", compute_confusion_matrix)
     print("precom_eval_seeds:", precom_eval_seeds)
     print("image_directory:", image_directory)
+    print("N_images_to_save:", N_images_to_save)
     print("allow_black_pixels:", allow_black_pixels)
     print("--------")
     judge_accuracy = judge.evaluate_accuracy()
@@ -294,9 +299,12 @@ def run(
         sample = judge.eval_data[sample_id].flatten()
         label = judge.eval_labels[sample_id]
 
+        save_img = image_directory and (
+            N_images_to_save is None or sample_id - start_at_sample < N_images_to_save
+        )
         # Reproduce the experiment from AI safety via debate paper
         if not eval_unrestricted:
-            if image_directory:
+            if save_img:
                 dirname = image_directory+'/img'+str(sample_id+1)+'/'
                 makedirs(dirname, exist_ok=True)
             else:
@@ -312,7 +320,7 @@ def run(
 
         # Evaluate unrestricted debate (without precommit)
         else:
-            if image_directory:
+            if save_img:
                 makedirs(image_directory, exist_ok=True)
                 filename = image_directory+'/img'+str(sample_id+1)
             else:

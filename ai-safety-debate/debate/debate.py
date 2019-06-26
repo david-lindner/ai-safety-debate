@@ -20,6 +20,7 @@ class Debate:
         debug=False,
         changing_sides=True,
         player_order=None,
+        allow_black_pixels=False,
     ):
         assert len(agents) == 2
         self.agents = agents
@@ -52,6 +53,7 @@ class Debate:
             self.judge,
             self.player_order,
             self.N_moves,
+            allow_black_pixels,
         )
 
 

@@ -28,10 +28,12 @@ def cfg():
     classifier_path = None
     cheat_debate = False
     only_update_for_wins = True
-    precomputed_debate_results_path = None
+    precomputed_debate_results_restricted_first_path = None
+    precomputed_debate_results_restricted_second_path = None
     shuffle_batches = True
     use_dropout = True
     importance_sampling_weights = False
+    importance_sampling_cap = None
 
 
 @ex.automain
@@ -47,10 +49,12 @@ def run(
     classifier_path,
     cheat_debate,
     only_update_for_wins,
-    precomputed_debate_results_path,
+    precomputed_debate_results_restricted_first_path,
+    precomputed_debate_results_restricted_second_path,
     shuffle_batches,
     use_dropout,
     importance_sampling_weights,
+    importance_sampling_cap,
 ):
     if judge_path:
         path = judge_path
@@ -69,19 +73,28 @@ def run(
     judge_accuracy = judge.evaluate_accuracy()
     print("Judge accuracy:", judge_accuracy)
 
-    if precomputed_debate_results_path is not None:
+    if precomputed_debate_results_restricted_first_path is not None:
+        assert precomputed_debate_results_restricted_second_path is not None
         if cheat_debate:
             raise Exception(
                 "cheat_debate should not be enabled when training "
                 "from precomputed debate results"
             )
-        debate_results = np.fromfile(precomputed_debate_results_path).reshape(
-            -1, 10, 10
+        debate_results_restricted_first = np.fromfile(
+            precomputed_debate_results_restricted_first_path
+        ).reshape(-1, 10, 10)
+        debate_results_restricted_second = np.fromfile(
+            precomputed_debate_results_restricted_second_path
+        ).reshape(-1, 10, 10)
+        print(
+            "Loaded debate results from {} and {}".format(
+                precomputed_debate_results_restricted_first_path,
+                precomputed_debate_results_restricted_second_path,
+            )
         )
-        print("Loaded debate results from", precomputed_debate_results_path)
         print("These will be used for training instead of re-running the debates.")
     else:
-        debate_results = None
+        debate_results_restricted_first, debate_results_restricted_second = None, None
 
     train_data = judge.train_data
     N_train = len(judge.train_labels)
@@ -112,11 +125,17 @@ def run(
             probs /= probs.sum()
             # print("i", i, "label", label)
             # print("i", i, "label2", label2)
+            restricted_first = np.random.random() < 0.5
 
             if cheat_debate:
                 # simulate a perfectly accurate debate
                 utility = -1 if label == judge.train_labels[i] else 0
-            elif debate_results is not None:
+            elif debate_results_restricted_first is not None:
+                assert debate_results_restricted_second is not None
+                if restricted_first:
+                    debate_results = debate_results_restricted_first
+                else:
+                    debate_results = debate_results_restricted_second
                 # use precomputed results
                 judge_probabilities = debate_results[i, label]
                 if np.all(judge_probabilities[label] >= judge_probabilities):
@@ -125,8 +144,16 @@ def run(
                     utility = 0
             else:
                 # run non-precommited debate
-                agent1 = DebateAgent(precommit_label=None, agentStrength=rollouts)
-                agent2 = DebateAgent(precommit_label=label, agentStrength=rollouts)
+                agent_unrestricted = DebateAgent(
+                    precommit_label=None, agentStrength=rollouts
+                )
+                agent_restricted = DebateAgent(
+                    precommit_label=label, agentStrength=rollouts
+                )
+                if restricted_first:
+                    agent1, agent2 = agent_restricted, agent_unrestricted
+                else:
+                    agent1, agent2 = agent_unrestricted, agent_restricted
                 debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
                 utility = debate.play()
 
@@ -136,7 +163,13 @@ def run(
                 weight = 1 if utility == -1 else -1
 
             if importance_sampling_weights:
-                weight *= min(1 / probs[label], 100)
+                importance_sampling_factor = 1 / probs[label]
+                if (
+                    importance_sampling_cap is not None
+                    and importance_sampling_factor < importance_sampling_cap
+                ):
+                    importance_sampling_factor = importance_sampling_cap
+                weight *= importance_sampling_factor
 
             # print("weight", weight)
             batch_samples.append(sample)

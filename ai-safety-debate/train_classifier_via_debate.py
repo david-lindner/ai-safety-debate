@@ -120,11 +120,6 @@ def run(
             sample = train_data[i]
             probs = next(debate_classifier.predict(sample))["probabilities"]
             label = np.random.choice(range(len(probs)), p=probs)
-            # label = judge.train_labels[i]
-            probs[label] = 0
-            probs /= probs.sum()
-            # print("i", i, "label", label)
-            # print("i", i, "label2", label2)
             restricted_first = np.random.random() < 0.5
 
             if cheat_debate:
@@ -166,7 +161,7 @@ def run(
                 importance_sampling_factor = 1 / probs[label]
                 if (
                     importance_sampling_cap is not None
-                    and importance_sampling_factor < importance_sampling_cap
+                    and importance_sampling_factor > importance_sampling_cap
                 ):
                     importance_sampling_factor = importance_sampling_cap
                 weight *= importance_sampling_factor

@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     judge = MNISTJudge(N_to_mask=args.N_to_mask)
     train_labels = judge.train_labels
-    truth_wins_count = 0
+    truth_wins_count, lie_looses_count = 0, 0
 
     debate_results = np.fromfile(args.file).reshape(-1, 10, 10)
     n_samples = len(debate_results)

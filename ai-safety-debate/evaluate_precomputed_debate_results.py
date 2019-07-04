@@ -29,7 +29,7 @@ if __name__ == "__main__":
         for wrong_label in range(10):
             if wrong_label != true_label:
                 probabilities = debate_results[i, wrong_label]
-                if np.all(probabilities[wrong_label] < probabilities):
+                if not np.all(probabilities[wrong_label] >= probabilities):
                     lie_looses_count += 1
 
     print(

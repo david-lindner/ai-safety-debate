@@ -124,7 +124,12 @@ def run(
 
             if cheat_debate:
                 # simulate a perfectly accurate debate
-                utility = -1 if label == judge.train_labels[i] else 0
+                if label == judge.train_labels[i]:
+                    weight = 1
+                elif only_update_for_wins:
+                    weight = 0
+                else:
+                    weight = -1
             elif debate_results_restricted_first is not None:
                 assert debate_results_restricted_second is not None
                 if restricted_first:

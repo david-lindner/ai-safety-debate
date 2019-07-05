@@ -134,9 +134,11 @@ def run(
                 # use precomputed results
                 judge_probabilities = debate_results[i, label]
                 if np.all(judge_probabilities[label] >= judge_probabilities):
-                    utility = -1
+                    weight = 1
+                elif only_update_for_wins:
+                    weight = 0
                 else:
-                    utility = 0
+                    weight = -1
             else:
                 # run non-precommited debate
                 agent_unrestricted = DebateAgent(
@@ -152,10 +154,14 @@ def run(
                 debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
                 utility = debate.play()
 
-            if only_update_for_wins:
-                weight = 1 if utility == -1 else 0
-            else:
-                weight = 1 if utility == -1 else -1
+                if (utility == 1 and restricted_first) or (
+                    utility == -1 and not restricted_first
+                ):
+                    weight = 1
+                elif only_update_for_wins:
+                    weight = 0
+                else:
+                    weight = -1
 
             if importance_sampling_weights:
                 importance_sampling_factor = 1 / probs[label]

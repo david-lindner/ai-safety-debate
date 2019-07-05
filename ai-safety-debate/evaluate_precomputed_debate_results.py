@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     judge = MNISTJudge(N_to_mask=args.N_to_mask)
     train_labels = judge.train_labels
-    truth_wins_count, lie_looses_count = 0, 0
+    truth_wins_count, lie_loses_count = 0, 0
 
     debate_results = np.fromfile(args.file).reshape(-1, 10, 10)
     n_samples = len(debate_results)
@@ -30,7 +30,7 @@ if __name__ == "__main__":
             if wrong_label != true_label:
                 probabilities = debate_results[i, wrong_label]
                 if not np.all(probabilities[wrong_label] >= probabilities):
-                    lie_looses_count += 1
+                    lie_loses_count += 1
 
     print(
         "Truth won {} out of {}  ({:.2f}%)".format(
@@ -39,13 +39,13 @@ if __name__ == "__main__":
     )
     print(
         "Lie lost {} out of {}  ({:.2f}%)".format(
-            lie_looses_count, n_samples * 9, 100 * lie_looses_count / (9 * n_samples)
+            lie_loses_count, n_samples * 9, 100 * lie_loses_count / (9 * n_samples)
         )
     )
     print(
         "Overall, debate was correct {} out of {} times ({:.2f}%)".format(
-            truth_wins_count + lie_looses_count,
+            truth_wins_count + lie_loses_count,
             n_samples * 10,
-            100 * (truth_wins_count + lie_looses_count) / (10 * n_samples),
+            100 * (truth_wins_count + lie_loses_count) / (10 * n_samples),
         )
     )

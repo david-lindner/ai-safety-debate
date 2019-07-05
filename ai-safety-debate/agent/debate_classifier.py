@@ -7,13 +7,24 @@ class DebateClassifier:
     https://www.tensorflow.org/tutorials/estimators/cnn#building_the_cnn_mnist_classifier
     """
 
-    def __init__(self, sample_shape=[28, 28], model_dir=None, log_dir=None):
+    def __init__(
+        self,
+        learning_rate=1e-4,
+        learning_rate_decay=False,
+        sample_shape=[28, 28],
+        model_dir=None,
+        log_dir=None,
+        use_dropout=True,
+    ):
         self.sample_shape = sample_shape
         self.estimator = tf.estimator.Estimator(
             model_fn=self.model_fn, model_dir=model_dir
         )
+        self.learning_rate = learning_rate
+        self.learning_rate_decay = learning_rate_decay
+        self.use_dropout = True
 
-    def train(self, np_batch, labels, loss_weights):
+    def train(self, np_batch, labels, loss_weights, shuffle=True):
         """
         Train for one batch of data.
 
@@ -32,7 +43,7 @@ class DebateClassifier:
             y=labels,
             batch_size=batch_size,
             num_epochs=1,
-            shuffle=True,
+            shuffle=shuffle,
         )
         self.estimator.train(input_fn=train_input_fn)
 
@@ -83,9 +94,13 @@ class DebateClassifier:
         # Dense Layer
         pool2_flat = tf.reshape(pool2, [-1, 7 * 7 * 64])
         dense = tf.layers.dense(inputs=pool2_flat, units=1024, activation=tf.nn.relu)
-        dropout = tf.layers.dropout(
-            inputs=dense, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN
-        )
+
+        if self.use_dropout:
+            dropout = tf.layers.dropout(
+                inputs=dense, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN
+            )
+        else:
+            dropout = dense
 
         # Logits Layer
         logits = tf.layers.dense(inputs=dropout, units=10)
@@ -113,10 +128,15 @@ class DebateClassifier:
 
         # Configure the Training Op (for TRAIN mode)
         if mode == tf.estimator.ModeKeys.TRAIN:
-            optimizer = tf.train.AdamOptimizer(learning_rate=1e-4)
-            train_op = optimizer.minimize(
-                loss=loss, global_step=tf.train.get_global_step()
-            )
+            global_step = tf.train.get_global_step()
+            if self.learning_rate_decay:
+                learning_rate = tf.train.exponential_decay(
+                    self.learning_rate, global_step, 30, 0.9, staircase=True
+                )
+            else:
+                learning_rate = self.learning_rate
+            optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+            train_op = optimizer.minimize(loss=loss, global_step=global_step)
             return tf.estimator.EstimatorSpec(mode=mode, loss=loss, train_op=train_op)
 
         # Add evaluation metrics (for EVAL mode)

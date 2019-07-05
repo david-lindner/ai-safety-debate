@@ -18,7 +18,13 @@ from agent import DebateAgent
 
 
 def get_debate_results(
-    start_point, use_test_data, batch_size, N_samples, N_to_mask, judge_path
+    start_point,
+    use_test_data,
+    batch_size,
+    N_samples,
+    N_to_mask,
+    judge_path,
+    restricted_first,
 ):
     # MNISTJudge has to be imported here, because otherwise tensorflow does not
     # work together with multiprocessing
@@ -40,8 +46,16 @@ def get_debate_results(
         for label in range(10):
             # print("label", label)
             sample = dataset[start_point + i]
-            agent1 = DebateAgent(precommit_label=None, agentStrength=args.rollouts)
-            agent2 = DebateAgent(precommit_label=label, agentStrength=args.rollouts)
+            unrestricted_agent = DebateAgent(
+                precommit_label=None, agentStrength=args.rollouts
+            )
+            restricted_agent = DebateAgent(
+                precommit_label=label, agentStrength=args.rollouts
+            )
+            if restricted_first:
+                agent1, agent2 = unrestricted_agent, restricted_agent
+            else:
+                agent1, agent2 = restricted_agent, unrestricted_agent
             debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
             probabilities = debate.play(full_report=True)
             results_per_label[label] = probabilities
@@ -88,6 +102,7 @@ if __name__ == "__main__":
         help="Number of samples to precompute debate results for.",
         default=60000,
     )
+    parser.add_argument("--restricted-first", action="store_true")
 
     args = parser.parse_args()
 
@@ -102,6 +117,7 @@ if __name__ == "__main__":
         N_samples=args.N_samples,
         N_to_mask=args.N_to_mask,
         judge_path=args.judge_path,
+        restricted_first=args.restricted_first,
     )
 
     # this should give the same result as the code below, not using multiprocessing

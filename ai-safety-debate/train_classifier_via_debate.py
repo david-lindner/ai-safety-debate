@@ -176,6 +176,8 @@ def run(
                 ):
                     importance_sampling_factor = importance_sampling_cap
                 weight *= importance_sampling_factor
+            else:
+                weight *= 100
 
             # print("weight", weight)
             batch_samples.append(sample)

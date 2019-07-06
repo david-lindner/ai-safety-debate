@@ -15,7 +15,7 @@ class MNISTJudge(Judge):
 
         # shape used for prediction (see evaluate_debate and update_predictor in judge.py)
         # 1 image at a time, of size 28 by 28, paired with a mask
-        self.shape = [1, 28, 28, 2]  
+        self.shape = [1, 28, 28, 2]
 
         # Load training and eval data
         (
@@ -23,7 +23,7 @@ class MNISTJudge(Judge):
             (eval_data, eval_labels),
         ) = tf.keras.datasets.mnist.load_data()
         self.train_data = train_data / np.float32(255)
-        self.train_labels = train_labels.astype(np.int32) # astype maybe not required
+        self.train_labels = train_labels.astype(np.int32)  # astype maybe not required
         self.eval_data = eval_data / np.float32(255)
         self.eval_labels = eval_labels.astype(np.int32)
 
@@ -76,7 +76,7 @@ class MNISTJudge(Judge):
             "classes": tf.argmax(input=logits, axis=1),
             # Add `softmax_tensor` to the graph. It is used for PREDICT and by the
             # `logging_hook`.
-            "probabilities": tf.nn.softmax(logits, name="softmax_tensor")
+            "probabilities": tf.nn.softmax(logits, name="softmax_tensor"),
         }
 
         # The predictor in judge.py automatically uses ModeKeys.PREDICT

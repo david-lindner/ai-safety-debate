@@ -1,6 +1,12 @@
 import numpy as np
 from .debate_state import DebateState
-from util.visualization import plot_image_mask
+
+try:
+    from util.visualization import plot_image_mask
+
+    visualization_available = True
+except ImportError:
+    visualization_available = False
 
 
 class Debate:
@@ -11,6 +17,7 @@ class Debate:
     after each action.
     Specifying player order could even make this order custom.
     """
+
     def __init__(
         self,
         agents,
@@ -68,6 +75,7 @@ class Debate:
             action = self.agents[self.current_state.current_player].select_move(self)
             self.current_state = self.current_state.takeAction(action)
             if self.debug or filename:
+                assert visualization_available
                 plot_image_mask(
                     self.current_state,
                     None if filename is None else filename+'_'+str(index),
@@ -81,7 +89,6 @@ class Debate:
             return probabilities
         else:
             utility = self.judge.evaluate_debate(
-                np.stack([mask, self.sample * mask], axis=1),
-                self.initial_statements,
+                np.stack([mask, self.sample * mask], axis=1), self.initial_statements
             )
             return utility

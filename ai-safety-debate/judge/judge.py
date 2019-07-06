@@ -4,6 +4,7 @@ import sys
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 
+
 class Judge:
     def __init__(self, N_to_mask, model_dir, binary_rewards=True):
         self.N_to_mask = N_to_mask
@@ -18,7 +19,7 @@ class Judge:
             raise Exception("Subclass needs to define a model_fn")
 
         # Create the predictor from the present model. Important when restoring a model.
-        self.update_predictor() 
+        self.update_predictor()
 
     def update_predictor(self):
         # Predictors are used to get predictions fast once the model has been trained.
@@ -133,7 +134,6 @@ class Judge:
         """
         assert len(initial_statements) == 2
         probs = self.full_report(input)
-        # print("probs", probs)
 
         # Initial statement of None corresponds to agents that have not precommited.
         # The unrestricted ( = non-precommited) player gets the probability of the best non-taken label
@@ -145,11 +145,11 @@ class Judge:
             raise Exception("At least one agent has to make a claim!")
         elif initial_statements[0] is None:
             prob_pl_1 = probs[initial_statements[1]]
-            probs[initial_statements[1]] = 0 # set to 0 to get max of the other labels
+            probs[initial_statements[1]] = 0  # set to 0 to get max of the other labels
             utility = max(probs) - prob_pl_1
         elif initial_statements[1] is None:
             prob_pl_0 = probs[initial_statements[0]]
-            probs[initial_statements[0]] = 0 # set to 0 to get max of the other labels
+            probs[initial_statements[0]] = 0  # set to 0 to get max of the other labels
             utility = prob_pl_0 - max(probs)
         else:
             utility = probs[initial_statements[0]] - probs[initial_statements[1]]
@@ -164,7 +164,9 @@ class Judge:
         return utility
 
     def full_report(self, input):
-        input = np.reshape(input, self.shape)  # reshapes vectors into images, if appropriate
+        input = np.reshape(
+            input, self.shape
+        )  # reshapes vectors into images, if appropriate
         prediction = self.predictor({"masked_x": input})
         probabilities = prediction["probabilities"][0]
         return probabilities

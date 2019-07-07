@@ -131,7 +131,7 @@ class DebateClassifier:
             global_step = tf.train.get_global_step()
             if self.learning_rate_decay:
                 learning_rate = tf.train.exponential_decay(
-                    self.learning_rate, global_step, 30, 0.9, staircase=True
+                    self.learning_rate, global_step, 100, 0.95, staircase=True
                 )
             else:
                 learning_rate = self.learning_rate

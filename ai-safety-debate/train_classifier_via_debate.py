@@ -129,7 +129,7 @@ def run(
                 elif only_update_for_wins:
                     weight = 0
                 else:
-                    weight = -1
+                    weight = -0.1
             elif debate_results_restricted_first is not None:
                 assert debate_results_restricted_second is not None
                 if restricted_first:
@@ -143,7 +143,7 @@ def run(
                 elif only_update_for_wins:
                     weight = 0
                 else:
-                    weight = -1
+                    weight = -0.1
             else:
                 # run non-precommited debate
                 agent_unrestricted = DebateAgent(
@@ -166,7 +166,7 @@ def run(
                 elif only_update_for_wins:
                     weight = 0
                 else:
-                    weight = -1
+                    weight = -0.1
 
             if importance_sampling_weights:
                 importance_sampling_factor = 1 / probs[label]

@@ -73,6 +73,17 @@ class Judge:
         # Replace the old predictor with one created from the new estimator
         self.update_predictor()
 
+    def get_randomly_masked_input(self, image):
+        image_flat = image.flat
+        mask = np.zeros_like(image_flat)
+        while mask.sum() < self.N_to_mask:
+            a = np.random.randint(mask.shape[0])
+            if image_flat[a] > 0:
+                mask[a] = 1
+        input = np.stack((mask, image_flat * mask), axis=1)
+        input = np.reshape(input, self.shape)
+        return input
+
     def evaluate_accuracy(self):
         # Evaluate the accuracy on all the eval_data
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
@@ -90,14 +101,7 @@ class Judge:
         count = 0
         for i in range(len(self.eval_labels)):
             # print(i)
-            image = self.eval_data[i].flat
-            mask = np.zeros_like(image)
-            while mask.sum() < self.N_to_mask:
-                a = np.random.randint(mask.shape[0])
-                if image[a] > 0:
-                    mask[a] = 1
-            input = np.stack((mask, image * mask), axis=1)
-            input = np.reshape(input, self.shape)
+            input = self.get_randomly_masked_input(self.eval_data[i])
             prediction = self.predictor({"masked_x": input})
             probs = prediction["probabilities"][0]
             pred_label = np.argmax(probs)

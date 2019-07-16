@@ -27,6 +27,7 @@ def cfg():
     learning_rate_decay = False
     classifier_path = None
     cheat_debate = False
+    select_random_pixels = False
     only_update_for_wins = True
     precomputed_debate_results_restricted_first_path = None
     precomputed_debate_results_restricted_second_path = None
@@ -48,6 +49,7 @@ def run(
     learning_rate_decay,
     classifier_path,
     cheat_debate,
+    select_random_pixels,
     only_update_for_wins,
     precomputed_debate_results_restricted_first_path,
     precomputed_debate_results_restricted_second_path,
@@ -78,6 +80,11 @@ def run(
         if cheat_debate:
             raise Exception(
                 "cheat_debate should not be enabled when training "
+                "from precomputed debate results"
+            )
+        elif select_random_pixels:
+            raise Exception(
+                "select_random_pixels should not be enabled when training "
                 "from precomputed debate results"
             )
         debate_results_restricted_first = np.fromfile(
@@ -122,22 +129,11 @@ def run(
             label = np.random.choice(range(len(probs)), p=probs)
             restricted_first = np.random.random() < 0.5
 
-            if cheat_debate:
-                # simulate a perfectly accurate debate
-                if label == judge.train_labels[i]:
-                    weight = 1
-                elif only_update_for_wins:
-                    weight = 0
-                else:
-                    weight = -0.1
-            elif debate_results_restricted_first is not None:
-                assert debate_results_restricted_second is not None
-                if restricted_first:
-                    debate_results = debate_results_restricted_first
-                else:
-                    debate_results = debate_results_restricted_second
-                # use precomputed results
-                judge_probabilities = debate_results[i, label]
+            if select_random_pixels:
+                # select random pixels instead of debate
+                judge_probabilities = judge.full_report(
+                    judge.get_randomly_masked_input(sample)
+                )
                 if np.all(judge_probabilities[label] >= judge_probabilities):
                     weight = 1
                 elif only_update_for_wins:
@@ -145,28 +141,52 @@ def run(
                 else:
                     weight = -0.1
             else:
-                # run non-precommited debate
-                agent_unrestricted = DebateAgent(
-                    precommit_label=None, agentStrength=rollouts
-                )
-                agent_restricted = DebateAgent(
-                    precommit_label=label, agentStrength=rollouts
-                )
-                if restricted_first:
-                    agent1, agent2 = agent_restricted, agent_unrestricted
+                # select pixels via debate
+                if cheat_debate:
+                    # simulate a perfectly accurate debate
+                    if label == judge.train_labels[i]:
+                        weight = 1
+                    elif only_update_for_wins:
+                        weight = 0
+                    else:
+                        weight = -0.1
+                elif debate_results_restricted_first is not None:
+                    assert debate_results_restricted_second is not None
+                    if restricted_first:
+                        debate_results = debate_results_restricted_first
+                    else:
+                        debate_results = debate_results_restricted_second
+                    # use precomputed results
+                    judge_probabilities = debate_results[i, label]
+                    if np.all(judge_probabilities[label] >= judge_probabilities):
+                        weight = 1
+                    elif only_update_for_wins:
+                        weight = 0
+                    else:
+                        weight = -0.1
                 else:
-                    agent1, agent2 = agent_unrestricted, agent_restricted
-                debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
-                utility = debate.play()
+                    # run non-precommited debate
+                    agent_unrestricted = DebateAgent(
+                        precommit_label=None, agentStrength=rollouts
+                    )
+                    agent_restricted = DebateAgent(
+                        precommit_label=label, agentStrength=rollouts
+                    )
+                    if restricted_first:
+                        agent1, agent2 = agent_restricted, agent_unrestricted
+                    else:
+                        agent1, agent2 = agent_unrestricted, agent_restricted
+                    debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
+                    utility = debate.play()
 
-                if (utility == 1 and restricted_first) or (
-                    utility == -1 and not restricted_first
-                ):
-                    weight = 1
-                elif only_update_for_wins:
-                    weight = 0
-                else:
-                    weight = -0.1
+                    if (utility == 1 and restricted_first) or (
+                        utility == -1 and not restricted_first
+                    ):
+                        weight = 1
+                    elif only_update_for_wins:
+                        weight = 0
+                    else:
+                        weight = -0.1
 
             if importance_sampling_weights:
                 importance_sampling_factor = 1 / probs[label]

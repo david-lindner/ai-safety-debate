@@ -53,9 +53,9 @@ def get_debate_results(
                 precommit_label=label, agentStrength=args.rollouts
             )
             if restricted_first:
-                agent1, agent2 = unrestricted_agent, restricted_agent
-            else:
                 agent1, agent2 = restricted_agent, unrestricted_agent
+            else:
+                agent1, agent2 = unrestricted_agent, restricted_agent
             debate = Debate((agent1, agent2), judge, N_to_mask, sample.flat)
             probabilities = debate.play(full_report=True)
             results_per_label[label] = probabilities

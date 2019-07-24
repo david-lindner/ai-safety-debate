@@ -71,11 +71,12 @@ def run(
         precommit_label=second_agent_label, agentStrength=rollouts
     )
 
-    assert first_agent_label == label or second_agent_label == label
     if first_agent_label == label:
         index_of_true_agent = 0
-    else:
+    elif second_agent_label == label:
         index_of_true_agent = 1
+    else:
+        raise Exception("One label has to be the true one")
 
     player_description = DebatePlayers(
         first_agent,
@@ -98,5 +99,3 @@ def run(
     probabilities = debate.play(full_report=True)
     print("Debate done in {} seconds".format(time.time() - t))
     return probabilities
-
-    # player_description.print_debate_result(utility, label)

@@ -73,5 +73,5 @@ if __name__ == "__main__":
     plt.xlabel("# labels that win restricted debate")
     plt.ylabel("# mnist samples")
     ticks = np.arange(restricted_wins_count_by_sample.max())
-    plt.xticks(ticks + 0.4, ticks)
+    plt.xticks(ticks, ticks)
     plt.show()

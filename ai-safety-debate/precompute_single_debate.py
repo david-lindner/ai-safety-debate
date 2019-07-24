@@ -65,7 +65,6 @@ def run(
     sample = judge.eval_data[sample_id].flatten()
     label = judge.eval_labels[sample_id]
     _run.log_scalar("true_label", label)
-    first_agent_label = label
 
     first_agent = DebateAgent(precommit_label=first_agent_label, agentStrength=rollouts)
     second_agent = DebateAgent(

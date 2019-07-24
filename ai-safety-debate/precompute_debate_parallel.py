@@ -77,19 +77,19 @@ if __name__ == "__main__":
             else:
                 first_agent_label = None
                 second_agent_label = label
-        job = {
-            "N_to_mask": args.N_to_mask,
-            "use_test_data": args.use_test_data,
-            "sample_id": i + args.start_sample,
-            "first_agent_label": first_agent_label,
-            "second_agent_label": second_agent_label,
-            "dataset": "mnist",
-            "judge_path": args.judge_path,
-            "rollouts": args.rollouts,
-            "binary_rewards": True,
-            "changing_sides": False,
-        }
-        jobs.append(job)
+            job = {
+                "N_to_mask": args.N_to_mask,
+                "use_test_data": args.use_test_data,
+                "sample_id": i + args.start_sample,
+                "first_agent_label": first_agent_label,
+                "second_agent_label": second_agent_label,
+                "dataset": "mnist",
+                "judge_path": args.judge_path,
+                "rollouts": args.rollouts,
+                "binary_rewards": True,
+                "changing_sides": False,
+            }
+            jobs.append(job)
 
     t = time.time()
 

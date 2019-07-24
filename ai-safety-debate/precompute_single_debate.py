@@ -71,23 +71,8 @@ def run(
         precommit_label=second_agent_label, agentStrength=rollouts
     )
 
-    if first_agent_label == label:
-        index_of_true_agent = 0
-    elif second_agent_label == label:
-        index_of_true_agent = 1
-    else:
-        raise Exception("One label has to be the true one")
-
-    player_description = DebatePlayers(
-        first_agent,
-        second_agent,
-        index_of_true_agent,
-        our_name="truth",
-        opp_name="liar",
-    )
-
     debate = Debate(
-        player_description.agents,
+        [first_agent, second_agent],
         judge,
         N_to_mask,
         sample,

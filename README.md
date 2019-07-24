@@ -1,6 +1,6 @@
 # Training classifiers via Debate
 
-## Note: This code is work in progress and is guaranteed to contain bugs.
+## Note: This code is a work in progress. It will change, and hopefully get better, during the next few months.
 
 This repository provides code to reproduce the experiments from [AI Safety via Debate](https://arxiv.org/abs/1805.00899) ([blogpost](https://openai.com/blog/debate/)).
 
@@ -27,16 +27,4 @@ We use `sacred` for tracking experiments. The results are typically stored in th
 
 ```
 python ai-safety-debate/run_debate.py with judge_path=ai-safety-debate/saved_models/mnist4
-```
-
-## Reproducing 'AI Safety via Debate'
-
-The commands for reproducing the results in table 2 of the [original AI Safety via Debate paper](https://arxiv.org/abs/1805.00899) can be found in `external_compute/amplify.sh`.
-
-
-## Testing
-
-We use `pytest` for testing (however, not many tests are implemented yet). Run the tests with
-```
-pytest .
 ```

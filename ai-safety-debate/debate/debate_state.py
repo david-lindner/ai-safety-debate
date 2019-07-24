@@ -13,7 +13,8 @@ class DebateState:
         initial_statements,
         judge,
         player_order,  # a vector of player labels -- who acts in which turn
-        moves_left=6,  # debate has to tell the state how many moves can we make
+        moves_left,  # debate has to tell the state how many moves can we make
+        allow_black_pixels,
     ):
 
         self.sample = sample
@@ -21,6 +22,7 @@ class DebateState:
         self.initial_statements = initial_statements
         self.judge = judge
         self.moves_left = moves_left
+        self.allow_black_pixels=allow_black_pixels
         if player_order == None:
             raise Exception("Player order not specified")
 
@@ -30,8 +32,12 @@ class DebateState:
         self.player_order = player_order
 
     def getPossibleActions(self):
-        """Shows the not selected and nonzero features."""
-        return np.where((self.mask.sum(axis=0) == 0) & (self.sample != 0))[0]
+        if self.allow_black_pixels:
+            # Shows the not selected features.
+            return np.where(self.mask.sum(axis=0) == 0)[0]
+        else:
+            # Shows the not selected and nonzero features.
+            return np.where((self.mask.sum(axis=0) == 0) & (self.sample != 0))[0]
 
     def takeAction(self, action):
         """Adds the latest action to the mask and changes the player."""
@@ -77,5 +83,5 @@ class DebateState:
         utility = self.judge.evaluate_debate(
             np.stack((mask, self.sample * mask), axis=1), self.initial_statements
         )
-        assert -1 <= utility and utility <= 1
+        assert -1 <= utility <= 1
         return utility

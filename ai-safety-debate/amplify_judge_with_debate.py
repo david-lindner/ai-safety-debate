@@ -4,8 +4,7 @@ Run the debate evaluation on a dataset. Many features included.
 
 import time
 import numpy as np
-import matplotlib.pyplot as plt
-from os import remove
+from os import remove, makedirs
 
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
@@ -13,6 +12,12 @@ from sacred.observers import FileStorageObserver
 from judge import MNISTJudge, FashionJudge
 from debate import Debate
 from agent import DebateAgent
+
+try:
+    import matplotlib.pyplot as plt
+    plt_available = True
+except ModuleNotFoundError:
+    plt_available = False
 
 ex = Experiment("mnist_debate_eval")
 ex.observers.append(FileStorageObserver.create("amplification_experiments"))
@@ -32,9 +37,11 @@ def cfg():
     changing_sides = True
     compute_confusion_matrix = False
     precom_eval_seeds = 3
+    image_directory = None
+    N_images_to_save = None
+    allow_black_pixels = False
 
-
-def evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides, seeds=3, confusion_matrix_counter=None):
+def evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides, allow_black_pixels, seeds=3, confusion_matrix_counter=None, dirname=None):
     """
     Evaluate the sample using precommited debate as in the AISvD paper, optionaly change the number of seeds (3 seeds in the paper)
     If confusion_matrix_counter is specified, than update the counter so that confusion_matrix_counter[true_label][lying_label] specifies the number of times 'lying_label' won over 'true_label'.
@@ -66,8 +73,11 @@ def evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_
                     sample,
                     debug=False,
                     changing_sides=changing_sides,
+                    allow_black_pixels=allow_black_pixels,
                 )
-                this_game_utility = debate.play()
+                this_game_utility = debate.play(
+                    filename = None if dirname is None else dirname+str(lying_agent_label)
+                )
                 if this_game_utility == -1:  # second agent won (lying)
                     liar_win_count += 1
                     if confusion_matrix_counter is not None and game_number == 0:
@@ -80,8 +90,11 @@ def evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_
                     sample,
                     debug=False,
                     changing_sides=changing_sides,
+                    allow_black_pixels=allow_black_pixels,
                 )
-                this_game_utility = debate.play()
+                this_game_utility = debate.play(
+                    filename = None if dirname is None else dirname+str(lying_agent_label)
+                )
                 if this_game_utility == 1:  # first agent won (lying)
                     liar_win_count += 1
                     if confusion_matrix_counter is not None and game_number == 0:
@@ -89,10 +102,9 @@ def evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_
 
             # If liar's won majority of games or doesn't have chance of winning the majority and we're not computing the confusion matrix, we can end the evaluation of this sample
             games_left = seeds - game_number - 1
-            if liar_win_count == majority_of_seeds or (
+            if (liar_win_count == majority_of_seeds or (
                 majority_of_seeds - liar_win_count > games_left
-            ):
-                if confusion_matrix_counter is None:
+              )) and confusion_matrix_counter is None:
                     break
         if liar_win_count >= majority_of_seeds:
             truth_won = False
@@ -101,7 +113,7 @@ def evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_
     return truth_won
 
 
-def evaluate_sample_unrestricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides):
+def evaluate_sample_unrestricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides, allow_black_pixels, filename=None):
     """
     Evaluate unrestricted debate (without precommit)
     """
@@ -117,8 +129,9 @@ def evaluate_sample_unrestricted(N_to_mask, sample, label, judge, rollouts, inde
             sample,
             debug=False,
             changing_sides=changing_sides,
+            allow_black_pixels=allow_black_pixels,
         )
-        this_game_utility = debate.play()
+        this_game_utility = debate.play(filename=filename)
         if this_game_utility == -1:
             truth_won = False
     else:
@@ -129,16 +142,18 @@ def evaluate_sample_unrestricted(N_to_mask, sample, label, judge, rollouts, inde
             sample,
             debug=False,
             changing_sides=changing_sides,
+            allow_black_pixels=allow_black_pixels,
         )
-        this_game_utility = debate.play()
+        this_game_utility = debate.play(filename=filename)
         if this_game_utility == 1:
             truth_won = False
     return truth_won
 
-def built_confusion_matrix(confusion_matrix_counter, labels_frequency, show_matrix=False):
+def build_confusion_matrix(confusion_matrix_counter, labels_frequency, dataset, show_matrix=False):
     """
     Computes, saves and optionaly plots the confusion matrix.
     """
+    assert plt_available, "Images can't be plotted or saved without plt (yet)"
 
     # normalize according to frequencies of the labels and multiply by 100 
     normalized_confusion_matrix = confusion_matrix_counter
@@ -204,6 +219,9 @@ def run(
     changing_sides,
     compute_confusion_matrix,
     precom_eval_seeds,
+    image_directory,
+    N_images_to_save,
+    allow_black_pixels,
 ):
 
     """
@@ -238,7 +256,9 @@ def run(
         nmbr_samples = len(judge.eval_data)
 
     if (precom_eval_seeds%2) != 1:
-        raise Expection("Number of seeds to evaluate the precommited debate must be odd")
+        raise Exception("Number of seeds to evaluate the precommited debate must be odd")
+    
+    assert image_directory or not N_images_to_save
 
     print("Parameters")
     print("--------")
@@ -253,6 +273,9 @@ def run(
     print("changing_sides:", changing_sides)
     print("compute_confusion_matrix:", compute_confusion_matrix)
     print("precom_eval_seeds:", precom_eval_seeds)
+    print("image_directory:", image_directory)
+    print("N_images_to_save:", N_images_to_save)
+    print("allow_black_pixels:", allow_black_pixels)
     print("--------")
     judge_accuracy = judge.evaluate_accuracy()
     print("Judge accuracy:", judge_accuracy)
@@ -276,15 +299,37 @@ def run(
         sample = judge.eval_data[sample_id].flatten()
         label = judge.eval_labels[sample_id]
 
+        save_img = image_directory and (
+            N_images_to_save is None or sample_id - start_at_sample < N_images_to_save
+        )
         # Reproduce the experiment from AI safety via debate paper
         if not eval_unrestricted:
-            truth_won = evaluate_sample_restricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides, precom_eval_seeds, confusion_matrix_counter=confusion_matrix_counter)
+            if save_img:
+                dirname = image_directory+'/img'+str(sample_id+1)+'/'
+                makedirs(dirname, exist_ok=True)
+            else:
+                dirname = None
+            truth_won = evaluate_sample_restricted(
+                N_to_mask, sample, label, judge, rollouts,
+                index_of_truth_agent, changing_sides, allow_black_pixels, 
+                precom_eval_seeds, confusion_matrix_counter,
+                dirname
+            )
             if compute_confusion_matrix:
                 labels_frequency[label] += 1
 
         # Evaluate unrestricted debate (without precommit)
         else:
-            truth_won = evaluate_sample_unrestricted(N_to_mask, sample, label, judge, rollouts, index_of_truth_agent, changing_sides)
+            if save_img:
+                makedirs(image_directory, exist_ok=True)
+                filename = image_directory+'/img'+str(sample_id+1)
+            else:
+                filename = None
+            truth_won = evaluate_sample_unrestricted(
+                N_to_mask, sample, label, judge, rollouts, 
+                index_of_truth_agent, changing_sides, allow_black_pixels,
+                filename
+            )
 
         print("\t Sample {}".format(sample_id + 1), end=" ", flush=True)
         if truth_won:
@@ -312,4 +357,4 @@ def run(
     )
 
     if compute_confusion_matrix:
-        built_confusion_matrix(confusion_matrix_counter, labels_frequency, show_matrix=False)
+        build_confusion_matrix(confusion_matrix_counter, labels_frequency, dataset, show_matrix=False)

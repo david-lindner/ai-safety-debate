@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import sys
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 
@@ -12,9 +13,7 @@ class Judge:
         try:
             self.estimator = tf.estimator.Estimator(
                 model_fn=self.model_fn,
-                model_dir=model_dir,  # directory to restore model from and save model to
-                # Only the latest checkpoint is saved, so you don't have to upload/download as much data
-                config=tf.estimator.RunConfig(keep_checkpoint_max=1),
+                model_dir=model_dir,    # directory to restore model from and save model to
             )
         except AttributeError:
             raise Exception("Subclass needs to define a model_fn")
@@ -52,14 +51,17 @@ class Judge:
         of the input vector. Combine this with the vector to create the input for the DNN.
         """
         shape = tf.shape(batch)
+        n_zero = tf.random.categorical(logits=self.zero_logits,num_samples=1,dtype=tf.int32)
         p = tf.random_uniform(shape, 0, 1)
-        nonzero_p = tf.where(batch > 0, p, tf.zeros_like(p))
-        _, indices = tf.nn.top_k(nonzero_p, self.N_to_mask)
+        p = tf.where(batch > 0, p, -p) # each number is positive if > 0, else negative
+        _, nonzero_indices = tf.nn.top_k(p, self.N_to_mask - n_zero[0][0]) # sample positive
+        _, zero_indices = tf.nn.top_k(-p, n_zero[0][0])                    # sample negative
+        indices = tf.concat([nonzero_indices,zero_indices],1)
         mask = tf.one_hot(indices, shape[1], axis=1)
         mask = tf.reduce_sum(mask, axis=2)
         return tf.stack((mask, mask * batch), 2)
 
-    def train(self, n_steps):
+    def train(self, n_steps, n_zero=0):
         # Train the model
         train_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": self.train_data},
@@ -68,18 +70,34 @@ class Judge:
             num_epochs=None,
             shuffle=True,
         )
+
+        if type(n_zero) != list:
+            self.zero_logits = [[0 if i == n_zero else -np.inf for i in range(self.N_to_mask + 1)]]
+        else:
+            assert len(n_zero) == self.N_to_mask + 1
+            self.zero_logits = np.log(n_zero).reshape((1,-1))
+
         self.estimator.train(input_fn=train_input_fn, steps=n_steps)
 
         # Replace the old predictor with one created from the new estimator
         self.update_predictor()
 
-    def evaluate_accuracy(self):
+    def evaluate_accuracy(self, n_zero=0):
         # Evaluate the accuracy on all the eval_data
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={"x": self.eval_data}, y=self.eval_labels, num_epochs=1, shuffle=False
+            x={"x": self.eval_data}, 
+            y=self.eval_labels, 
+            num_epochs=1, 
+            shuffle=False
         )
-        eval_results = self.estimator.evaluate(input_fn=eval_input_fn)
-        return eval_results
+
+        if type(n_zero) != list:
+            self.zero_logits = [[0 if i == n_zero else -np.inf for i in range(self.N_to_mask + 1)]]
+        else:
+            assert len(n_zero) == self.N_to_mask + 1
+            self.zero_logits = np.log(n_zero).reshape((1,-1))
+
+        return self.estimator.evaluate(input_fn=eval_input_fn)
 
     def evaluate_accuracy_using_predictor(self):
         """

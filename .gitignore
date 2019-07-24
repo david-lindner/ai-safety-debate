@@ -112,6 +112,7 @@ amplification_experiments/
 saved_models/
 out_from_experiments
 .idea/
+amplify_batch_out.txt
 
 bin
 include

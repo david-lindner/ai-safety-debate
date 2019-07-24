@@ -2,7 +2,7 @@
 import time
 import math
 import random
-
+import numpy as np
 
 def randomPolicy(state):
     while not state.isTerminal():
@@ -30,7 +30,7 @@ class mcts:
     def __init__(
         self,
         timeLimit=None,
-        iterationLimit=None,
+        iterationLimit=None,    # if iterationLimit=0, take random actions
         explorationConstant=1,  # 1 / math.sqrt(2),
         rolloutPolicy=randomPolicy,
     ):
@@ -44,14 +44,20 @@ class mcts:
             if iterationLimit is None:
                 raise ValueError("Must have either a time limit or an iteration limit")
             # number of iterations of the search
-            if iterationLimit < 1:
-                raise ValueError("Iteration limit must be greater than one")
-            self.searchLimit = iterationLimit
-            self.limitType = "iterations"
+            if iterationLimit >= 1:
+                self.searchLimit = iterationLimit
+                self.limitType = "iterations"
+            elif iterationLimit == 0:
+                self.limitType = "random_action"
+            else:
+                raise ValueError("Iteration limit must be 0 or >= 1")
         self.explorationConstant = explorationConstant
         self.rollout = rolloutPolicy
 
     def search(self, initialState):
+        if self.limitType == "random_action":
+            return np.random.choice(initialState.getPossibleActions())
+
         self.root = treeNode(initialState, None)
 
         if self.limitType == "time":

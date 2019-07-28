@@ -3,3 +3,5 @@ tensorflow>=1.13
 matplotlib
 sacred
 pytest
+pymongo
+incense

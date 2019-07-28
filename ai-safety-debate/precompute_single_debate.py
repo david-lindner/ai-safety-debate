@@ -4,14 +4,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sacred import Experiment
-from sacred.observers import FileStorageObserver
+from sacred.observers import MongoObserver
 
 from judge import MNISTJudge
 from agent import DebateAgent, DebatePlayers
 from debate import Debate
 
 ex = Experiment("tabular_mdp_experiment")
-ex.observers.append(FileStorageObserver.create("precompute"))
+with open("mongo.txt") as f:
+    MONGO_URL = f.readline().strip()
+observer = MongoObserver.create(url=MONGO_URL, db_name="debate")
+ex.observers.append(observer)
 
 
 @ex.config

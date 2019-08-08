@@ -65,8 +65,12 @@ def run(
         raise Exception("Unknown dataset in " + "dataset.txt: " + dataset)
 
     # Get debate data and run the debate
-    sample = judge.eval_data[sample_id].flatten()
-    label = judge.eval_labels[sample_id]
+    if use_test_data:
+        sample = judge.eval_data[sample_id].flatten()
+        label = judge.eval_labels[sample_id]
+    else:
+        sample = judge.train_data[sample_id].flatten()
+        label = judge.train_labels[sample_id]
     _run.log_scalar("true_label", label)
 
     first_agent = DebateAgent(precommit_label=first_agent_label, agentStrength=rollouts)

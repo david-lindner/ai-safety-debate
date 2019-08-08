@@ -5,3 +5,4 @@ sacred
 pytest
 pymongo
 incense
+jsonlines

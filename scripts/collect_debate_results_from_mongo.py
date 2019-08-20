@@ -9,7 +9,7 @@ if __name__ == "__main__":
     rollouts = 1000
     use_test_data = False
     unrestricted_debate = True
-    restricted_first = True
+    restricted_first = None
 
     if unrestricted_debate:
         if restricted_first is not None:
@@ -37,9 +37,11 @@ if __name__ == "__main__":
             restricted_query,
             {"config.dataset": dataset},
             {"config.rollouts": rollouts},
+            {"status": "COMPLETED"},
         ]
     }
-    experiments = loader.find_latest(1000)
+    # experiments = loader.find_latest(10)
+    experiments = loader.find(query)
     print("Found {} experiments in the database".format(len(experiments)))
 
     with jsonlines.open(
@@ -52,7 +54,8 @@ if __name__ == "__main__":
             f.write(
                 {
                     "config": ex_dict["config"],
-                    "result": ex_dict["result"],
-                    "status": ex_dict["status"],
+                    "result": ex_dict["result"]["values"],
+                    "true_label": ex.metrics["true_label"][0],
                 }
             )
+            del ex_dict

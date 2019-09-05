@@ -4,14 +4,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sacred import Experiment
-from sacred.observers import FileStorageObserver
+from sacred.observers import MongoObserver
 
 from judge import MNISTJudge
 from agent import DebateAgent, DebatePlayers
 from debate import Debate
 
 ex = Experiment("tabular_mdp_experiment")
-ex.observers.append(FileStorageObserver.create("precompute"))
+with open("mongo.txt") as f:
+    MONGO_URL = f.readline().strip()
+observer = MongoObserver.create(url=MONGO_URL, db_name="debate")
+ex.observers.append(observer)
 
 
 @ex.config
@@ -62,8 +65,12 @@ def run(
         raise Exception("Unknown dataset in " + "dataset.txt: " + dataset)
 
     # Get debate data and run the debate
-    sample = judge.eval_data[sample_id].flatten()
-    label = judge.eval_labels[sample_id]
+    if use_test_data:
+        sample = judge.eval_data[sample_id].flatten()
+        label = judge.eval_labels[sample_id]
+    else:
+        sample = judge.train_data[sample_id].flatten()
+        label = judge.train_labels[sample_id]
     _run.log_scalar("true_label", label)
 
     first_agent = DebateAgent(precommit_label=first_agent_label, agentStrength=rollouts)

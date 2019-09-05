@@ -107,6 +107,8 @@ if __name__ == "__main__":
         print("\n".join(stderr))
 
     t = time.time()
-    with Pool(args.N_jobs) as p:
-        p.map(run_job, jobs)
+    # with Pool(args.N_jobs) as p:
+        # p.map(run_job, jobs)
+    for job in jobs:
+        run_job(job)
     print("time", time.time() - t)

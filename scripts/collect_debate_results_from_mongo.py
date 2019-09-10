@@ -38,11 +38,15 @@ if __name__ == "__main__":
             {"config.dataset": dataset},
             {"config.rollouts": rollouts},
             {"status": "COMPLETED"},
+            # {"status": {"$ne": "COMPLETED"}},
         ]
     }
     # experiments = loader.find_latest(10)
     experiments = loader.find(query)
     print("Found {} experiments in the database".format(len(experiments)))
+
+    # for exp in experiments:
+    #     print(exp.config["sample_id"])
 
     with jsonlines.open(
         "debate_dump_{}_{}_rollouts_1000.jsonl".format(dataset, N_to_mask, rollouts),

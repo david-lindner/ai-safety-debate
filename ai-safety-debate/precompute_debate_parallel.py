@@ -15,9 +15,11 @@ from multiprocessing import Pool
 
 from judge import MNISTJudge
 
-precompute_single_script = os.path.join(
-    os.path.dirname(__file__), "precompute_single_debate.py"
-)
+from precompute_single_debate import ex as single_debate
+
+# precompute_single_script = os.path.join(
+    # os.path.dirname(__file__), "precompute_single_debate.py"
+# )
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -110,5 +112,6 @@ if __name__ == "__main__":
     # with Pool(args.N_jobs) as p:
         # p.map(run_job, jobs)
     for job in jobs:
-        run_job(job)
+        # run_job(job)
+        single_debate.run(config_updates=job)
     print("time", time.time() - t)
